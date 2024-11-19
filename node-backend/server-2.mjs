@@ -1,6 +1,6 @@
 import amqplib from "amqplib";
 
-const RABBITMQ_URL = 'amqp://localhost'; // Replace with your RabbitMQ URL
+const RABBITMQ_URL = 'amqp://admin:password@localhost:30072'; // Replace with your RabbitMQ URL
 const QUEUE_NAME = 'jsonMessages';
 
 async function consumeMessages() {
