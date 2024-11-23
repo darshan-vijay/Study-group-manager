@@ -1,10 +1,20 @@
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+import Redis from 'ioredis';
 
 // Initialize Express and HTTP server
 const app = express();
 const server = createServer(app);
+
+//Initialize Redis
+const redisHost = 'localhost';
+const redisPort = 30079;
+const channel = 'socketChannel';
+
+const redis = new Redis({
+  host: redisHost, port: redisPort
+});
 
 // Initialize Socket.IO
 const io = new Server(server, {
@@ -13,10 +23,27 @@ const io = new Server(server, {
         methods: ["GET", "POST"]
     }
 });
+
 let connections = new Map();  // Map to track user IDs and socket IDs
+
+redis.subscribe(channel, (err, count) => {
+  if (err) {
+    console.error('Failed to subscribe:', err);
+  } else {
+    console.log(`Subscribed to ${channel}, listening for messages...`);
+  }
+});
+
+redis.on('message', (channel, data) => {
+  const targetSocketId = connections.get(parseInt(data.receiver));
+      if (targetSocketId) {
+          io.sockets.sockets.get(targetSocketId).emit('message', data.message);
+      }
+});
 
 // Handle Socket.IO connection
 io.on('connection', (socket) => {
+
     console.log('A user connected:', socket.id);
     
     // Assign a unique userId (could replace this with a session ID or username in production)
@@ -29,7 +56,7 @@ io.on('connection', (socket) => {
     socket.emit('assign', userId);
 
     // Receive message from the client
-    socket.on('message', (data) => {
+    socket.on('message', async (data) => {
         console.log('Message received:', data);
         
         // Look up the target socket by userId (receiver)
@@ -38,7 +65,8 @@ io.on('connection', (socket) => {
               // Emit the message to the target socket
               io.sockets.sockets.get(targetSocketId).emit('message', data.message);
           } else {
-              console.log(`Receiver socket not found for user: ${data.receiver}`);
+            await redis.publish(channel, data);
+            console.log(`Publishing for user: ${data.receiver}`);
           }
     });
 
