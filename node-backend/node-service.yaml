@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: websocket-service
+  labels:
+    app: websocket-server
+spec:
+  type: LoadBalancer
+  selector:
+    app: websocket-server
+  ports:
+  - protocol: TCP
+    port: 3004
+    targetPort: 3004
+  sessionAffinity: ClientIP

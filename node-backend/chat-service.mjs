@@ -8,8 +8,8 @@ const app = express();
 const server = createServer(app);
 
 //Initialize Redis
-const redisHost = 'localhost';
-const redisPort = 30079;
+const redisHost = 'redis';
+const redisPort = 6379;
 const channel = 'socketChannel';
 
 const redis = new Redis({
