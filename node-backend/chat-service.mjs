@@ -45,15 +45,12 @@ redis.on('message', (channel, data) => {
 io.on('connection', (socket) => {
 
     console.log('A user connected:', socket.id);
-    
-    // Assign a unique userId (could replace this with a session ID or username in production)
-    let userId = Math.floor(Math.random() * 100) + 1;
-
+    let userId = parseInt(socket.handshake.query.userId);
     // Store the userId and socket.id in the connections map
     connections.set(userId, socket.id);
 
-    // Send the assigned userId back to the client
-    socket.emit('assign', userId);
+    let room = parseInt(socket.handshake.query.room);
+    socket.join(room);
 
     // Receive message from the client
     socket.on('message', async (data) => {
@@ -69,6 +66,11 @@ io.on('connection', (socket) => {
             console.log(`Publishing for user: ${data.receiver}`);
           }
     });
+
+    socket.on('group-message', async (data) => {
+      console.log('Message Group:', data);
+      io.to(parseInt(data.room)).emit('message', data.message);
+  });
 
     // Handle disconnection
     socket.on('disconnect', () => {

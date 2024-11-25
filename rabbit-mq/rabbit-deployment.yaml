@@ -46,4 +46,3 @@ spec:
             - ping
           initialDelaySeconds: 20
           periodSeconds: 10
----
