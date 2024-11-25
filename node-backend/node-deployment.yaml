@@ -21,6 +21,6 @@ spec:
         - containerPort: 3004
         env:
         - name: REDIS_HOST
-          value: "your-redis-host"
+          value: "redis"
         - name: REDIS_PORT
           value: "6379"
