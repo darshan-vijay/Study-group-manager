@@ -19,7 +19,7 @@ terraform {
 
 provider "google" {
   credentials = var.GOOGLE_CREDENTIALS
-  project     = "third-arcadia-434000-s5"
+  project     = "unified-freedom-443118-s0"
   region      = "us-east1"
 }
 
@@ -55,3 +55,37 @@ resource "google_compute_instance" "vm_instance" {
     access_config {}
   }
 }
+
+resource "google_firestore_database" "database" {
+  name                    = "(default)"
+  location_id             = "nam5"
+  type                    = "FIRESTORE_NATIVE"
+  delete_protection_state = "DELETE_PROTECTION_DISABLED"
+  deletion_policy         = "DELETE"
+}
+
+resource "google_storage_bucket" "default" {
+  name          = "study-group-bucket"
+  location      = "US"
+  storage_class = "STANDARD"
+
+  lifecycle_rule {
+    condition {
+      age        = 30
+      with_state = "LIVE"
+    }
+    action {
+      type = "Delete"
+    }
+  }
+
+  versioning {
+    enabled = true
+  }
+
+  labels = {
+    environment = "dev"
+    team        = "engineering"
+  }
+}
+
