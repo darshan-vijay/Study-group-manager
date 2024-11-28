@@ -7,6 +7,14 @@ terraform {
       name = "default-workspace"
     }
   }
+
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = "~> 5.0"
+    }
+  }
+
 }
 
 provider "google" {
@@ -16,6 +24,7 @@ provider "google" {
 }
 
 # Create a GKE Cluster
+# switch off delete protection
 resource "google_container_cluster" "primary" {
   name     = "study-group-cluster"
   location = "us-east1"
@@ -23,6 +32,9 @@ resource "google_container_cluster" "primary" {
   initial_node_count = 1
   node_config {
     machine_type = "e2-micro"
+  }
+  lifecycle {
+    prevent_destroy = false
   }
 }
 
