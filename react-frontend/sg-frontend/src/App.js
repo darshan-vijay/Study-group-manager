@@ -14,31 +14,12 @@ function App() {
 
     return (
         <Router>
-            <Container className="p-5 text-center">
+            <Container className="p-5 main-bg">
                 <Routes>
-                    <Route path="/" element={<WelcomeScreen />} />
-                    <Route path="/login" element={
-                        isAuthenticated ? <Navigate replace to="/dashboard" /> : <Login onLoginSuccess={handleLoginSuccess} />
-                    } />
-                    <Route path="/signup" element={
-                        isAuthenticated ? <Navigate replace to="/dashboard" /> : <Signup onSignupSuccess={handleLoginSuccess} />
-                    } />
-                    <Route path="/dashboard" element={
-                        isAuthenticated ? <Dashboard /> : <Navigate replace to="/login" />
-                    } />
+                    <Route path="/" element={<Login />} />
                 </Routes>
             </Container>
         </Router>
-    );
-}
-
-function WelcomeScreen() {
-    return (
-        <>
-            <h1>Welcome to Study Group Manager</h1>
-            <Link to="/login" className="btn btn-primary m-2">Login</Link>
-            <Link to="/signup" className="btn btn-secondary m-2">Sign Up</Link>
-        </>
     );
 }
 
