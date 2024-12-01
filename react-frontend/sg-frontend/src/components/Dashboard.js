@@ -1,5 +1,18 @@
-import React, { useState } from 'react';
-import { Container, Navbar, Nav, Form, FormControl, Button, Offcanvas, Row, Col } from 'react-bootstrap';
+import React, { useState } from "react";
+import {
+  Container,
+  Navbar,
+  Nav,
+  Form,
+  FormControl,
+  Button,
+  Offcanvas,
+  Row,
+  Col,
+} from "react-bootstrap";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faBars } from "@fortawesome/free-solid-svg-icons";
+import "../css/Dashboard.css";
 
 const Dashboard = () => {
   const [showSidebar, setShowSidebar] = useState(false);
@@ -12,12 +25,14 @@ const Dashboard = () => {
       {/* Top Bar */}
       <Navbar bg="dark" variant="dark" expand="lg" className="mb-4">
         <Container fluid>
-          <Button variant="primary" onClick={toggleSidebar}>
-            Launch
-        </Button>
+          <Button onClick={toggleSidebar} variant="light">
+            <FontAwesomeIcon icon={faBars} size="lg" />
+          </Button>
 
           {/* Logo and Search Bar */}
-          <Navbar.Brand href="#">Dashboard</Navbar.Brand>
+          <Navbar.Brand href="#" className="ms-3 fw-bold">
+            Studious
+          </Navbar.Brand>
 
           {/* Search Bar (Centered) */}
           <Nav className="mx-auto">
@@ -30,14 +45,14 @@ const Dashboard = () => {
               />
             </Form>
           </Nav>
-          
+
           {/* Profile Picture */}
           <div className="ms-3">
             <img
               src="https://via.placeholder.com/40" // Placeholder image URL for profile picture
               alt="Profile"
               className="rounded-circle"
-              style={{ width: '40px', height: '40px' }}
+              style={{ width: "40px", height: "40px" }}
             />
           </div>
         </Container>
@@ -62,9 +77,20 @@ const Dashboard = () => {
       <Container>
         <Row>
           <Col md={12}>
-            <h2>Welcome to the Dashboard!</h2>
-            <p>Here’s some content for the main area.</p>
+            <h2>Welcome to Studious!</h2>
+            <p>
+              To get started create your own study group, or join a new one that
+              already exists.
+            </p>
           </Col>
+        </Row>
+        <Row>
+          <div className="selection-button col-md-4 create-group-color">
+            Create Group
+          </div>
+          <div className="selection-button col-md-4 join-group-color">
+            Join Group
+          </div>
         </Row>
       </Container>
     </div>
