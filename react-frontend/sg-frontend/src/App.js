@@ -1,45 +1,36 @@
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
-import { Container } from 'reactstrap';
-import Login from './components/Login';
-import Signup from './components/Signup';
-import Dashboard from './components/Dashboard';
+import React, { useState } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  Link,
+} from "react-router-dom";
+import { Container } from "reactstrap";
+import Login from "./components/Login";
+import Dashboard from "./components/Dashboard";
+import CreateGroup from "./components/CreateGroup";
+import GroupDetails from "./components/GroupDetails";
+import PrivateChat from "./components/PrivateChat";
+import ChatList from "./components/ChatList";
+import GroupList from "./components/GroupList";
 
 function App() {
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-    const handleLoginSuccess = () => {
-        setIsAuthenticated(true);
-    };
-
-    return (
-        <Router>
-            <Container className="p-5 text-center">
-                <Routes>
-                    <Route path="/" element={<WelcomeScreen />} />
-                    <Route path="/login" element={
-                        isAuthenticated ? <Navigate replace to="/dashboard" /> : <Login onLoginSuccess={handleLoginSuccess} />
-                    } />
-                    <Route path="/signup" element={
-                        isAuthenticated ? <Navigate replace to="/dashboard" /> : <Signup onSignupSuccess={handleLoginSuccess} />
-                    } />
-                    <Route path="/dashboard" element={
-                        isAuthenticated ? <Dashboard /> : <Navigate replace to="/login" />
-                    } />
-                </Routes>
-            </Container>
-        </Router>
-    );
-}
-
-function WelcomeScreen() {
-    return (
-        <>
-            <h1>Welcome to Study Group Manager</h1>
-            <Link to="/login" className="btn btn-primary m-2">Login</Link>
-            <Link to="/signup" className="btn btn-secondary m-2">Sign Up</Link>
-        </>
-    );
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/createGroup" element={<CreateGroup />} />
+        <Route path="/groupDetails" element={<GroupDetails />} />
+        <Route path="/privateChat" element={<PrivateChat />} />
+        <Route path="/conversations" element={<ChatList />} />
+        <Route path="/joinGroup" element={<GroupList />} />
+      </Routes>
+    </Router>
+  );
 }
 
 export default App;

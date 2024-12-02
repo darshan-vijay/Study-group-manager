@@ -1,0 +1,147 @@
+/* General container styling */
+.grouplist-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: white;
+  height: 90%;
+}
+
+/* Grouplist box styling */
+.grouplist-box {
+  background-color: #fff;
+  border-radius: 15px;
+  width: 70%;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Filter button styling */
+.filter-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+.filter-button {
+  background-color: #333;
+  color: #fff;
+  border: none;
+  border-radius: 15px;
+  padding: 10px 20px;
+  font-size: 16px;
+}
+
+.filter-button:hover {
+  background-color: #555;
+}
+
+/* Group list container */
+.group-list-container {
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+/* Group item styling */
+.group-item {
+  background-color: #dee9f3;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #ccc;
+  transition: background-color 0.3s;
+}
+
+.group-item:hover {
+  background-color: #f1f1f1;
+}
+
+/* Group details */
+.group-details1 {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.group-details-container {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  background-color: #f8f9fa;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow-y: auto;
+  margin: 9px 0;
+}
+
+.group-name {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.group-meta span {
+  display: block;
+  font-size: 14px;
+  color: #666;
+}
+
+/* Join button styling */
+.join-button {
+  height: 50px;
+  align-self: center;
+}
+
+/* Scroll bar styling */
+.group-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.group-list::-webkit-scrollbar-thumb {
+  background-color: #ddd;
+  border-radius: 10px;
+}
+
+.group-list::-webkit-scrollbar-track {
+  background-color: #f9f9f9;
+}
+
+.search-bar1 {
+  display: flex;
+  align-items: center;
+  width: 80%;
+  margin-right: 10px;
+}
+
+.search-input {
+  flex: 1;
+  border: 1px solid #ccc;
+  border-right: none;
+  border-radius: 15px 0 0 15px;
+  padding: 10px;
+  font-size: 14px;
+}
+
+.search-button {
+  background-color: #333;
+  color: #fff;
+  border: none;
+  border-radius: 0 15px 15px 0;
+  cursor: pointer;
+  padding: 14px 20px;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-button:hover {
+  background-color: #555;
+}

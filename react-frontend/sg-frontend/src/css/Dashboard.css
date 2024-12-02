@@ -1,0 +1,46 @@
+.selection-button {
+  height: 80px;
+  width: 300px;
+  border-radius: 8px;
+  border: 1px solid grey;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-left: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0 40px;
+  font-size: 18px;
+  justify-content: space-between;
+}
+
+.create-group-color {
+  color: black;
+  border: 2px solid lawngreen;
+  background-color: rgb(195 238 153 / 50%);
+}
+
+.create-group-color:hover {
+  color: white;
+  background-color: forestgreen;
+  border: 2px solid limegreen;
+}
+
+.join-group-color {
+  color: black;
+  border: 2px solid orange;
+  background-color: rgba(238, 201, 153, 0.5);
+}
+
+.join-group-color:hover {
+  color: white;
+  background-color: darkorange;
+  border: 2px solid orange;
+}
+
+.group-row {
+  overflow-x: auto;
+  display: flex;
+  gap: 20px;
+  padding: 15px;
+}

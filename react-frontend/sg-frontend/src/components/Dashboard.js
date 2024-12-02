@@ -1,43 +1,73 @@
-import React from 'react';
-import Slider from 'react-slick';
-import { Container, Button, Card, CardBody, CardTitle, CardText } from 'reactstrap';
+import React, { useState } from "react";
+import { Container, Row, Col } from "react-bootstrap";
+import "../css/Dashboard.css";
+import { useNavigate } from "react-router-dom";
+import GroupCard from "./CardComponent";
+import NavigationBar from "./NavigationBar";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCommentDots } from "@fortawesome/free-solid-svg-icons";
 
-function Dashboard() {
-    const settings = {
-        dots: true,
-        infinite: true,
-        speed: 500,
-        slidesToShow: 3,
-        slidesToScroll: 1,
-        autoplay: true,
-        autoplaySpeed: 2000
-    };
+const Dashboard = () => {
+  const navigate = useNavigate();
+  const Groups = [1, 2, 3, 4, 5, 6, 7];
 
-    // Example data, replace with data fetched from your backend or Firebase
-    const studyGroups = [
-        { id: 1, subject: "Mathematics", description: "Join our group to explore advanced mathematics topics and prepare for exams." },
-        { id: 2, subject: "Physics", description: "Weekly sessions to cover new topics in physics and collaborate on projects." },
-        { id: 3, subject: "Literature", description: "Discuss classic and modern literature with peer group insights." },
-        { id: 4, subject: "Engineering", description: "Collaborative projects and study sessions for engineering students." }
-    ];
+  return (
+    <div>
+      {/* Top Bar */}
+      <NavigationBar></NavigationBar>
+      {/* Main Content */}
+      <Container>
+        <Row>
+          <Col md={12}>
+            <h2>Welcome to Studious!</h2>
+            <p>
+              To get started create your own study group, or join a new one that
+              already exists.
+            </p>
+          </Col>
+        </Row>
+        <Row>
+          <div
+            className="selection-button col-md-4 create-group-color"
+            onClick={() => {
+              navigate("/createGroup");
+            }}
+          >
+            Create Group
+          </div>
+          <div
+            className="selection-button col-md-4 join-group-color"
+            onClick={() => {
+              navigate("/joinGroup");
+            }}
+          >
+            Join Group
+          </div>
+        </Row>
+        <div className="mt-4">
+          <h3>Upcoming Events</h3>
 
-    return (
-        <Container>
-            <h1>Dashboard - Study Groups</h1>
-            <Slider {...settings}>
-                {studyGroups.map(group => (
-                    <Card key={group.id} className="m-3">
-                        <CardBody>
-                            <CardTitle tag="h5">{group.subject}</CardTitle>
-                            <CardText>{group.description}</CardText>
-                            <Button color="primary">Join Group</Button>
-                        </CardBody>
-                    </Card>
-                ))}
-            </Slider>
-        </Container>
-    );
-}
+          <div className="group-row mt-2">
+            {Groups.map((user) => (
+              <GroupCard className="ms-3" />
+            ))}
+          </div>
+        </div>
+        <div className="mt-4">
+          <h3>Important Links</h3>
+          <div
+            className="selection-button col-md-4"
+            onClick={() => {
+              navigate("/conversations");
+            }}
+          >
+            Conversations
+            <FontAwesomeIcon icon={faCommentDots} size="2x" />
+          </div>
+        </div>
+      </Container>
+    </div>
+  );
+};
 
 export default Dashboard;
-
