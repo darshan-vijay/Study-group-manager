@@ -1,16 +1,17 @@
 .selection-button {
   height: 80px;
-  width: 400px;
+  width: 300px;
   border-radius: 8px;
   border: 1px solid grey;
   display: flex;
-  align-content: center;
+  align-items: center;
   flex-wrap: wrap;
   margin-left: 20px;
   font-weight: 600;
   cursor: pointer;
   padding: 0 40px;
   font-size: 18px;
+  justify-content: space-between;
 }
 
 .create-group-color {
@@ -35,4 +36,11 @@
   color: white;
   background-color: darkorange;
   border: 2px solid orange;
+}
+
+.group-row {
+  overflow-x: auto;
+  display: flex;
+  gap: 20px;
+  padding: 15px;
 }

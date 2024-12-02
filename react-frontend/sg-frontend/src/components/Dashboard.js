@@ -1,78 +1,20 @@
 import React, { useState } from "react";
-import {
-  Container,
-  Navbar,
-  Nav,
-  Form,
-  FormControl,
-  Button,
-  Offcanvas,
-  Row,
-  Col,
-} from "react-bootstrap";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBars } from "@fortawesome/free-solid-svg-icons";
+import { Container, Row, Col } from "react-bootstrap";
 import "../css/Dashboard.css";
+import { useNavigate } from "react-router-dom";
+import GroupCard from "./CardComponent";
+import NavigationBar from "./NavigationBar";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCommentDots } from "@fortawesome/free-solid-svg-icons";
 
 const Dashboard = () => {
-  const [showSidebar, setShowSidebar] = useState(false);
-
-  // Toggle sidebar visibility
-  const toggleSidebar = () => setShowSidebar(!showSidebar);
+  const navigate = useNavigate();
+  const Groups = [1, 2, 3, 4, 5, 6, 7];
 
   return (
     <div>
       {/* Top Bar */}
-      <Navbar bg="dark" variant="dark" expand="lg" className="mb-4">
-        <Container fluid>
-          <Button onClick={toggleSidebar} variant="light">
-            <FontAwesomeIcon icon={faBars} size="lg" />
-          </Button>
-
-          {/* Logo and Search Bar */}
-          <Navbar.Brand href="#" className="ms-3 fw-bold">
-            Studious
-          </Navbar.Brand>
-
-          {/* Search Bar (Centered) */}
-          <Nav className="mx-auto">
-            <Form className="d-flex">
-              <FormControl
-                type="search"
-                placeholder="Search"
-                className="me-2"
-                aria-label="Search"
-              />
-            </Form>
-          </Nav>
-
-          {/* Profile Picture */}
-          <div className="ms-3">
-            <img
-              src="https://via.placeholder.com/40" // Placeholder image URL for profile picture
-              alt="Profile"
-              className="rounded-circle"
-              style={{ width: "40px", height: "40px" }}
-            />
-          </div>
-        </Container>
-      </Navbar>
-
-      {/* Sidebar (Offcanvas from the left) */}
-      <Offcanvas show={showSidebar} onHide={toggleSidebar} placement="start">
-        <Offcanvas.Header closeButton>
-          <Offcanvas.Title>Sidebar</Offcanvas.Title>
-        </Offcanvas.Header>
-        <Offcanvas.Body>
-          <Nav defaultActiveKey="/" className="flex-column">
-            <Nav.Link href="#">Home</Nav.Link>
-            <Nav.Link href="#">Settings</Nav.Link>
-            <Nav.Link href="#">Messages</Nav.Link>
-            <Nav.Link href="#">Notifications</Nav.Link>
-          </Nav>
-        </Offcanvas.Body>
-      </Offcanvas>
-
+      <NavigationBar></NavigationBar>
       {/* Main Content */}
       <Container>
         <Row>
@@ -85,13 +27,44 @@ const Dashboard = () => {
           </Col>
         </Row>
         <Row>
-          <div className="selection-button col-md-4 create-group-color">
+          <div
+            className="selection-button col-md-4 create-group-color"
+            onClick={() => {
+              navigate("/createGroup");
+            }}
+          >
             Create Group
           </div>
-          <div className="selection-button col-md-4 join-group-color">
+          <div
+            className="selection-button col-md-4 join-group-color"
+            onClick={() => {
+              navigate("/joinGroup");
+            }}
+          >
             Join Group
           </div>
         </Row>
+        <div className="mt-4">
+          <h3>Upcoming Events</h3>
+
+          <div className="group-row mt-2">
+            {Groups.map((user) => (
+              <GroupCard className="ms-3" />
+            ))}
+          </div>
+        </div>
+        <div className="mt-4">
+          <h3>Important Links</h3>
+          <div
+            className="selection-button col-md-4"
+            onClick={() => {
+              navigate("/conversations");
+            }}
+          >
+            Conversations
+            <FontAwesomeIcon icon={faCommentDots} size="2x" />
+          </div>
+        </div>
       </Container>
     </div>
   );

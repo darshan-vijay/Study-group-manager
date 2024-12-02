@@ -16,6 +16,18 @@
   border-radius: 5px 0 0 5px;
 }
 
+.newEventContainer {
+  width: 1000px;
+  box-shadow: rgb(0 0 0 / 16%) 1px 1px 10px;
+}
+
+.newEventContent {
+  padding-left: 12%;
+  padding-right: 12%;
+  height: 100%;
+  align-content: center;
+}
+
 .authFormContent {
   padding-left: 12%;
   padding-right: 12%;

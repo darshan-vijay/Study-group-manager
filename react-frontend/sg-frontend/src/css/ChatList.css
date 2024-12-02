@@ -1,0 +1,121 @@
+/* General container styling */
+.chatlist-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: white;
+  height: 90%;
+}
+
+/* Chatlist box styling */
+.chatlist-box {
+  background-color: #fff;
+  border-radius: 15px;
+  width: 70%;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Search bar styling */
+.search-bar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.search-input {
+  flex: 1; /* Ensure the input takes up the remaining space */
+  border: 1px solid #ccc;
+  border-right: none;
+  border-radius: 15px 0 0 15px;
+  padding: 10px;
+  font-size: 14px;
+}
+
+.search-button {
+  background-color: #333;
+  color: #fff;
+  border: none;
+  border-radius: 0 15px 15px 0;
+  cursor: pointer;
+  padding: 14px 20px;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-button:hover {
+  background-color: #555;
+}
+
+/* Chat list container */
+.chat-list-container {
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+/* Chat item styling */
+.chat-item {
+  background-color: #f9f9f9;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #ccc;
+  transition: background-color 0.3s;
+}
+
+.chat-item:hover {
+  background-color: #f1f1f1;
+}
+
+/* Distinguishing private vs group chats */
+.private-chat {
+  border-left: 5px solid #888;
+}
+
+.group-chat {
+  border-left: 5px solid #007bff;
+}
+
+/* Chat details */
+.chat-details {
+  flex-grow: 1;
+}
+
+.chat-name {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.chat-last-message {
+  font-size: 14px;
+  color: #666;
+}
+
+/* Chat icon styling */
+.chat-icon {
+  color: #333;
+  font-size: 18px;
+}
+
+/* Scroll bar styling */
+.chat-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.chat-list::-webkit-scrollbar-thumb {
+  background-color: #ddd;
+  border-radius: 10px;
+}
+
+.chat-list::-webkit-scrollbar-track {
+  background-color: #f9f9f9;
+}

@@ -9,6 +9,11 @@ import {
 import { Container } from "reactstrap";
 import Login from "./components/Login";
 import Dashboard from "./components/Dashboard";
+import CreateGroup from "./components/CreateGroup";
+import GroupDetails from "./components/GroupDetails";
+import PrivateChat from "./components/PrivateChat";
+import ChatList from "./components/ChatList";
+import GroupList from "./components/GroupList";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -18,6 +23,11 @@ function App() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/createGroup" element={<CreateGroup />} />
+        <Route path="/groupDetails" element={<GroupDetails />} />
+        <Route path="/privateChat" element={<PrivateChat />} />
+        <Route path="/conversations" element={<ChatList />} />
+        <Route path="/joinGroup" element={<GroupList />} />
       </Routes>
     </Router>
   );
