@@ -36,3 +36,4 @@ coverage/
 
 # Miscellaneous
 *.lock
+firebase-service-account.json
