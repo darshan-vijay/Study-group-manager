@@ -14,6 +14,8 @@ import GroupDetails from "./components/GroupDetails";
 import PrivateChat from "./components/PrivateChat";
 import ChatList from "./components/ChatList";
 import GroupList from "./components/GroupList";
+import PeopleList from "./components/PeopleList";
+import ProfilePage from "./components/ProfilePage";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -28,6 +30,8 @@ function App() {
         <Route path="/privateChat" element={<PrivateChat />} />
         <Route path="/conversations" element={<ChatList />} />
         <Route path="/joinGroup" element={<GroupList />} />
+        <Route path="/connectionSearch" element={<PeopleList />} />
+        <Route path="/profile" element={<ProfilePage />} />
       </Routes>
     </Router>
   );

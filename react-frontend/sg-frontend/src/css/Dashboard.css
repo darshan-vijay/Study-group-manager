@@ -38,9 +38,36 @@
   border: 2px solid orange;
 }
 
+.connect-color {
+  color: black;
+  border: 2px solid rgb(49, 231, 231);
+  background-color: rgba(164, 221, 221, 0.766);
+}
+
+.connect-color:hover {
+  color: white;
+  background-color: rgb(4, 95, 145);
+  border: 2px solid #0067ffcf;
+}
+
 .group-row {
   overflow-x: auto;
   display: flex;
   gap: 20px;
   padding: 15px;
+}
+
+/* Notification Popover Styling */
+.popover {
+  max-width: 300px;
+}
+
+.popover-body {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.list-unstyled li {
+  border-bottom: 1px solid #e9ecef;
+  padding-bottom: 5px;
 }

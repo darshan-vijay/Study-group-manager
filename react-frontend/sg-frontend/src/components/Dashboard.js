@@ -5,7 +5,12 @@ import { useNavigate } from "react-router-dom";
 import GroupCard from "./CardComponent";
 import NavigationBar from "./NavigationBar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCommentDots } from "@fortawesome/free-solid-svg-icons";
+import {
+  faCommentDots,
+  faUsers,
+  faAddressBook,
+  faSquarePlus,
+} from "@fortawesome/free-solid-svg-icons";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -34,6 +39,7 @@ const Dashboard = () => {
             }}
           >
             Create Group
+            <FontAwesomeIcon icon={faSquarePlus} />
           </div>
           <div
             className="selection-button col-md-4 join-group-color"
@@ -42,6 +48,16 @@ const Dashboard = () => {
             }}
           >
             Join Group
+            <FontAwesomeIcon icon={faUsers} />
+          </div>
+          <div
+            className="selection-button col-md-4 connect-color"
+            onClick={() => {
+              navigate("/connectionSearch");
+            }}
+          >
+            Connect with People
+            <FontAwesomeIcon icon={faAddressBook} />
           </div>
         </Row>
         <div className="mt-4">
@@ -62,7 +78,7 @@ const Dashboard = () => {
             }}
           >
             Conversations
-            <FontAwesomeIcon icon={faCommentDots} size="2x" />
+            <FontAwesomeIcon icon={faCommentDots} />
           </div>
         </div>
       </Container>
