@@ -1,0 +1,77 @@
+.user-profile-container {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+.profile-card {
+  width: 70%;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+}
+
+.profile-picture {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  margin-right: 20px;
+  border: 2px solid #007bff;
+}
+
+.profile-info {
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-info h2 {
+  margin-bottom: 10px;
+}
+
+.profile-info p {
+  margin-bottom: 5px;
+}
+
+.profile-info button {
+  align-self: flex-end;
+}
+
+.profile-sections {
+  width: 70%;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.friends-section,
+.groups-section {
+  width: 48%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.friend-item {
+  display: flex;
+  align-items: center;
+}
+
+.friend-picture {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.scroll-box {
+  max-height: 500px;
+  overflow-y: auto;
+}

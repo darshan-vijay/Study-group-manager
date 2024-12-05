@@ -72,7 +72,7 @@ const GroupList = () => {
             <InputGroup className="search-bar1">
               <Form.Control
                 type="text"
-                placeholder="Search Chats"
+                placeholder="Search Groups"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="search-input"
