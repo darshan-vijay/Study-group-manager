@@ -77,7 +77,23 @@ exports.validateCreateGroup = [
     .notEmpty().withMessage('Building is required for offline groups.')
     .isString().withMessage('Building must be a string.'),
 
-  (req, res, next) => {
+  body('friends')
+    .optional()
+    .isArray().withMessage('Friends must be an array of client IDs.')
+    .custom(async (friends) => {
+      // Validate each friend ID in the array
+      const validFriends = await Promise.all(friends.map(async (friendId) => {
+        const friend = await clientModel.getClientById(friendId);
+        return friend !== null;
+      }));
+
+      if (validFriends.includes(false)) {
+        throw new Error('Some of the provided friends are not valid.');
+      }
+      return true;
+    }),
+
+    (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
@@ -90,4 +106,53 @@ exports.validateCreateGroup = [
 
     next();
   },
+];
+
+// Add validation to check friends list
+exports.validateCreateGroup = [
+  body('groupName')
+    .notEmpty().withMessage('Group name is required.')
+    .isString().withMessage('Group name must be a string.')
+    .isLength({ max: 50 }).withMessage('Group name must not exceed 50 characters.'),
+  
+  body('subject')
+    .notEmpty().withMessage('Subject is required.')
+    .isString().withMessage('Subject must be a string.'),
+  
+  body('date')
+    .notEmpty().withMessage('Date is required.')
+    .isISO8601().withMessage('Date must be in ISO 8601 format.'),
+  
+  body('time')
+    .notEmpty().withMessage('Time is required.')
+    .matches(/^([01]\d|2[0-3]):([0-5]\d)$/).withMessage('Time must be in HH:mm format.'),
+  
+  body('location')
+    .if(body('subject').equals('offline'))
+    .notEmpty().withMessage('Location is required for offline groups.')
+    .isString().withMessage('Location must be a string.'),
+
+  body('friends')
+    .optional()
+    .isArray().withMessage('Friends must be an array of client IDs.')
+    .custom(async (friends) => {
+      // Optionally, validate if friends exist in the database
+      const validFriends = await Promise.all(friends.map(async (friendId) => {
+        const friend = await clientModel.getClientById(friendId); // Implement getClientById method in clientModel
+        return friend !== null;
+      }));
+
+      if (validFriends.includes(false)) {
+        throw new Error('Some of the provided friends are not valid.');
+      }
+      return true;
+    }),
+
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    next();
+  }
 ];
