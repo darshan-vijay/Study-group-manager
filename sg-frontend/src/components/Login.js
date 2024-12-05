@@ -29,7 +29,7 @@ export default function (props) {
   const handleLogin = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:3010//api/auth/login",
+        "http://localhost:3010/api/auth/login",
         {
           email: loginForm.email,
           password: loginForm.password,

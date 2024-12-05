@@ -17,6 +17,7 @@
     "express-validator": "^7.2.0",
     "firebase": "^11.0.2",
     "firebase-admin": "^13.0.1",
+    "firestore": "^1.1.6",
     "multer": "^1.4.5-lts.1",
     "nodemon": "^3.1.7",
     "uuid": "^11.0.3"
