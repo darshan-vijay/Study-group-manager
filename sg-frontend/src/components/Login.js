@@ -2,9 +2,11 @@ import React, { useState } from "react";
 import classes from "../css/Login.module.css";
 import { Container } from "reactstrap";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export default function (props) {
   const navigate = useNavigate();
+  const [message, setMessage] = useState("");
   const [currMode, setCurrMode] = useState("Login");
   const [loginForm, setLoginForm] = useState({
     email: "",
@@ -23,6 +25,20 @@ export default function (props) {
     gender: "",
     profilePicture: null,
   });
+
+  const handleLogin = async () => {
+    try {
+      const response = await axios.post("http://localhost:3010/login", {
+        email: loginForm.email,
+        password: loginForm.password,
+      });
+      setMessage(`Login successful: ${response.message}`);
+      console.log(message);
+    } catch (error) {
+      setMessage("Login Failed!");
+      console.log(message);
+    }
+  };
 
   // Login template JSX
   const logInTemplate = (
@@ -56,11 +72,8 @@ export default function (props) {
           </div>
           <div className="d-grid gap-2 mt-5">
             <button
-              type="submit"
               className={`btn btn-primary ${classes.btnColor}`}
-              onClick={() => {
-                navigate("/dashboard");
-              }}
+              onClick={handleLogin}
             >
               Submit
             </button>
