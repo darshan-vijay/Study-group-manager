@@ -6,7 +6,6 @@ import axios from "axios";
 
 export default function (props) {
   const navigate = useNavigate();
-  const [message, setMessage] = useState("");
   const [currMode, setCurrMode] = useState("Login");
   const [loginForm, setLoginForm] = useState({
     email: "",
@@ -26,7 +25,9 @@ export default function (props) {
     profilePicture: null,
   });
 
-  const handleLogin = async () => {
+  const handleLogin = async (e) => {
+    e.preventDefault(); // Prevent default form submission
+
     try {
       const response = await axios.post(
         "http://localhost:3010/api/auth/login",
@@ -35,11 +36,17 @@ export default function (props) {
           password: loginForm.password,
         }
       );
-      setMessage(`Login successful: ${response.message}`);
-      console.log(message);
+
+      if (response.data.status === "success") {
+        sessionStorage.setItem("clientId", response.data.clientId);
+        sessionStorage.setItem("firstName", response.data.firstName);
+        sessionStorage.setItem("lastName", response.data.lastName);
+        navigate("/dashboard"); // Navigate to the dashboard
+      } else {
+        console.log("Login failed: ", response.data.message);
+      }
     } catch (error) {
-      setMessage("Login Failed!");
-      console.log(message);
+      console.error("Login failed:", error.message);
     }
   };
 
@@ -76,7 +83,7 @@ export default function (props) {
           <div className="d-grid gap-2 mt-5">
             <button
               className={`btn btn-primary ${classes.btnColor}`}
-              onClick={handleLogin}
+              onClick={(e) => handleLogin(e)} // Pass the event
             >
               Submit
             </button>
