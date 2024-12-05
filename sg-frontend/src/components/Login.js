@@ -28,10 +28,13 @@ export default function (props) {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post("http://localhost:3010/login", {
-        email: loginForm.email,
-        password: loginForm.password,
-      });
+      const response = await axios.post(
+        "http://localhost:3010//api/auth/login",
+        {
+          email: loginForm.email,
+          password: loginForm.password,
+        }
+      );
       setMessage(`Login successful: ${response.message}`);
       console.log(message);
     } catch (error) {
