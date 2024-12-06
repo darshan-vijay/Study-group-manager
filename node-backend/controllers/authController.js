@@ -1,29 +1,82 @@
 // authController.js
-const nodemailer = require('nodemailer');  // Import nodemailer
-const bcrypt = require('bcrypt');
-const { validationResult } = require('express-validator');
-const clientModel = require('../models/clientModel');
-const groupModel = require('../models/groupModel');
-const { v4: uuidv4 } = require('uuid');
+const nodemailer = require("nodemailer"); // Import nodemailer
+const bcrypt = require("bcrypt");
+const clientModel = require("../models/clientModel");
+const groupModel = require("../models/groupModel");
+const chatModel = require("../models/chatModel");
+const { v4: uuidv4 } = require("uuid");
 const SALT_ROUNDS = 10;
+const axios = require("axios");
 
-// Create New Group Endpoint
-exports.createNewGroup = async (req, res) => {
-  const { groupName, subject, date, time, location, groupDescription, friends, type, clientId } = req.body;
+exports.getGroupDetails = async (req, res) => {
+  const { groupId } = req.body;
+
+  try {
+    const groupDetails = await groupModel.getGroupById(groupId);
+    // Send the response
+    res.status(201).json({
+      groupDetails,
+      status: "success",
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+//Get Groups for a team
+exports.getGroups = async (req, res) => {
+  const { clientId } = req.body;
 
   if (!clientId) {
-    return res.status(400).json({ error: 'Client ID is missing.' });
+    return res.status(400).json({ error: "Client ID is missing." });
   }
 
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
+    // Fetch client details
+    const clientDetails = await clientModel.getClientById(clientId);
 
+    // Resolve all group details in parallel using Promise.all
+    const groupDetails = await Promise.all(
+      clientDetails.groups.map(async (groupId) => {
+        const groupDetail = await groupModel.getGroupById(groupId);
+        return groupDetail;
+      })
+    );
+
+    // Send the response
+    res.status(201).json({
+      groupDetails: groupDetails,
+      status: "success",
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Create New Group Endpoint
+exports.createNewGroup = async (req, res) => {
+  const {
+    groupName,
+    subject,
+    date,
+    time,
+    location,
+    groupDescription,
+    friends,
+    type,
+    clientId,
+  } = req.body;
+
+  if (!clientId) {
+    return res.status(400).json({ error: "Client ID is missing." });
+  }
+
+  try {
     const existingGroup = await groupModel.getGroupByName(groupName);
     if (existingGroup) {
-      return res.status(400).json({ error: 'Group with this name already exists.' });
+      return res
+        .status(400)
+        .json({ error: "Group with this name already exists." });
     }
 
     // Generate unique Group ID starting with 'G'
@@ -48,7 +101,7 @@ exports.createNewGroup = async (req, res) => {
     }
 
     // If the group is online, generate Zoom link
-    if (subject.toLowerCase() === 'online') {
+    if (subject.toLowerCase() === "online") {
       newGroup.zoomLink = `https://zoom.us/${uuidv4()}`;
     }
 
@@ -60,7 +113,11 @@ exports.createNewGroup = async (req, res) => {
       await clientModel.addGroupToClient(memberId, groupId);
     }
 
-    res.status(201).json({ message: 'Group created successfully', groupId });
+    res.status(201).json({
+      message: "Group created successfully",
+      groupId,
+      status: "success",
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -72,20 +129,27 @@ exports.addMemberToGroup = async (req, res) => {
   const { groupId, friends } = req.body;
 
   if (!groupId || !friends || !Array.isArray(friends) || friends.length === 0) {
-    return res.status(400).json({ error: 'Invalid request. Provide a valid groupId and a non-empty array of friends.' });
+    return res.status(400).json({
+      error:
+        "Invalid request. Provide a valid groupId and a non-empty array of friends.",
+    });
   }
 
   try {
     const group = await groupModel.getGroupById(groupId);
     if (!group) {
-      return res.status(404).json({ error: 'Group not found.' });
+      return res.status(404).json({ error: "Group not found." });
     }
 
     const existingMembers = group.members || [];
-    const newMembers = friends.filter(friend => !existingMembers.includes(friend));
+    const newMembers = friends.filter(
+      (friend) => !existingMembers.includes(friend)
+    );
 
     if (newMembers.length === 0) {
-      return res.status(400).json({ error: 'All provided friends are already members of the group.' });
+      return res.status(400).json({
+        error: "All provided friends are already members of the group.",
+      });
     }
 
     await groupModel.addMembersToGroup(groupId, newMembers);
@@ -94,33 +158,48 @@ exports.addMemberToGroup = async (req, res) => {
       await clientModel.addGroupToClient(friendId, groupId);
     }
 
-    res.status(200).json({ message: 'Members added successfully.', newMembers });
+    res
+      .status(200)
+      .json({ message: "Members added successfully.", newMembers });
   } catch (err) {
-    res.status(500).json({ error: `Error adding members to the group: ${err.message}` });
+    res
+      .status(500)
+      .json({ error: `Error adding members to the group: ${err.message}` });
   }
 };
 
-
 exports.signUp = async (req, res) => {
-  const { username, email, password, firstName, lastName, courseOfStudy, yearOfStudy, typeOfDegree, gender } = req.body;
+  const {
+    username,
+    email,
+    password,
+    firstName,
+    lastName,
+    courseOfStudy,
+    yearOfStudy,
+    typeOfDegree,
+    gender,
+  } = req.body;
   const profilePicture = req.file;
 
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
-    const existingUser = await clientModel.getClientByUsernameOrEmail(username, email);
+    const existingUser = await clientModel.getClientByUsernameOrEmail(
+      username,
+      email
+    );
     if (existingUser) {
-      return res.status(400).json({ error: 'User with this username or email already exists.' });
+      return res
+        .status(400)
+        .json({ error: "User with this username or email already exists." });
     }
 
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
     let profilePictureUrl = null;
     if (profilePicture) {
-      profilePictureUrl = `data:${profilePicture.mimetype};base64,${profilePicture.buffer.toString('base64')}`;
+      profilePictureUrl = `data:${
+        profilePicture.mimetype
+      };base64,${profilePicture.buffer.toString("base64")}`;
     }
 
     const clientId = uuidv4(); // Generate a unique client ID
@@ -137,16 +216,21 @@ exports.signUp = async (req, res) => {
       gender,
       profilePictureUrl,
       friends: [], // Initialize friends array
-      groups: [] // Initialize groups array
+      groups: [], // Initialize groups array
     };
 
     await clientModel.addClient(newClient);
 
     // Send both clientId and status: success in the response
     res.status(201).json({
-      status: 'success',
+      status: "success",
       clientId: newClient.id,
-      message: 'SignUp Successful'
+      message: "SignUp Successful",
+      firstName: client.firstName,
+      lastName: client.lastName,
+      courseOfStudy: client.courseOfStudy,
+      yearOfStudy: client.yearOfStudy,
+      typeOfDegree: client.typeOfStudy,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -164,11 +248,13 @@ exports.addFriend = async (req, res) => {
     const friend = await clientModel.getClientById(friendId);
 
     if (!client || !friend) {
-      return res.status(404).json({ error: 'Client or friend not found.' });
+      return res.status(404).json({ error: "Client or friend not found." });
     }
 
     if (client.friends.includes(friendId)) {
-      return res.status(400).json({ error: 'This user is already your friend.' });
+      return res
+        .status(400)
+        .json({ error: "This user is already your friend." });
     }
 
     // Add the friend to both clients' friends lists
@@ -176,7 +262,7 @@ exports.addFriend = async (req, res) => {
     await clientModel.addFriendToClient(friendId, clientId);
 
     // Send success response
-    res.status(200).json({ message: 'Friend added successfully.' });
+    res.status(200).json({ message: "Friend added successfully." });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -190,27 +276,31 @@ exports.logIn = async (req, res) => {
     // Use the newly created getClientByEmail function
     const client = await clientModel.getClientByEmail(email);
     if (!client || !(await bcrypt.compare(password, client.password))) {
-      return res.status(400).json({ error: 'Invalid email or password.' });
+      return res.status(400).json({ error: "Invalid email or password." });
     }
 
     // Send the clientId and status: success in the response
     res.status(200).json({
-      clientId: client.id, // Assuming the client document has an 'id' field
-      status: 'success',
-      message: 'Login successful'
+      clientId: client.id,
+      firstName: client.firstName,
+      lastName: client.lastName,
+      courseOfStudy: client.courseOfStudy,
+      yearOfStudy: client.yearOfStudy,
+      typeOfDegree: client.typeOfStudy,
+      status: "success",
+      message: "Login successful",
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-
 // Delete Client Endpoint
 exports.deleteClient = async (req, res) => {
   try {
     const { id } = req.params;
     await clientModel.deleteClient(id);
-    res.status(200).json({ message: 'Client deleted successfully' });
+    res.status(200).json({ message: "Client deleted successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -222,7 +312,32 @@ exports.updateClient = async (req, res) => {
     const { id } = req.params;
     const updatedData = req.body;
     await clientModel.updateClient(id, updatedData);
-    res.status(200).json({ message: 'Client updated successfully' });
+    res.status(200).json({ message: "Client updated successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getClients = async (req, res) => {
+  try {
+    const { clients } = req.body;
+    const clientDetails = await Promise.all(
+      clients.map(async (clientId) => {
+        const clientDetail = await clientModel.getClientById(clientId);
+        return clientDetail;
+      })
+    );
+    res.status(200).json({ status: "success", clientDetails });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getClient = async (req, res) => {
+  try {
+    const { clientId } = req.body;
+    const clientDetails = await clientModel.getClientById(clientId);
+    res.status(200).json({ status: "success", clientDetails });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

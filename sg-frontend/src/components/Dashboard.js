@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Container, Row, Col } from "react-bootstrap";
 import "../css/Dashboard.css";
 import { useNavigate } from "react-router-dom";
@@ -11,22 +11,48 @@ import {
   faAddressBook,
   faSquarePlus,
 } from "@fortawesome/free-solid-svg-icons";
+import axios from "axios";
 
 const Dashboard = () => {
+  const [groups, setGroups] = useState([]);
+  const getGroups = async () => {
+    try {
+      const response = await axios.post(
+        "http://localhost:3010/api/auth/getGroups",
+        {
+          clientId: sessionStorage.getItem("clientId"),
+        }
+      );
+      console.log(response);
+      if (response.data.status === "success") {
+        setGroups(response.data.groupDetails);
+      } else {
+        setGroups([]);
+        console.log("Group fetch failed: ", response.data.message);
+      }
+    } catch (error) {
+      setGroups([]);
+      console.error("Group fetch failed:", error.message);
+    }
+  };
+
+  useEffect(() => {
+    getGroups();
+  }, []);
+
   const navigate = useNavigate();
-  const Groups = [1, 2, 3, 4, 5, 6, 7];
 
   return (
     <div>
       {/* Top Bar */}
-      <NavigationBar></NavigationBar>
+      <NavigationBar />
       {/* Main Content */}
       <Container>
         <Row>
           <Col md={12}>
             <h2>Welcome to Studious!</h2>
             <p>
-              To get started create your own study group, or join a new one that
+              To get started, create your own study group or join a new one that
               already exists.
             </p>
           </Col>
@@ -34,27 +60,21 @@ const Dashboard = () => {
         <Row>
           <div
             className="selection-button col-md-4 create-group-color"
-            onClick={() => {
-              navigate("/createGroup");
-            }}
+            onClick={() => navigate("/createGroup")}
           >
             Create Group
             <FontAwesomeIcon icon={faSquarePlus} />
           </div>
           <div
             className="selection-button col-md-4 join-group-color"
-            onClick={() => {
-              navigate("/joinGroup");
-            }}
+            onClick={() => navigate("/joinGroup")}
           >
             Join Group
             <FontAwesomeIcon icon={faUsers} />
           </div>
           <div
             className="selection-button col-md-4 connect-color"
-            onClick={() => {
-              navigate("/connectionSearch");
-            }}
+            onClick={() => navigate("/connectionSearch")}
           >
             Connect with People
             <FontAwesomeIcon icon={faAddressBook} />
@@ -62,10 +82,13 @@ const Dashboard = () => {
         </Row>
         <div className="mt-4">
           <h3>Upcoming Events</h3>
-
           <div className="group-row mt-2">
-            {Groups.map((user) => (
-              <GroupCard className="ms-3" />
+            {groups.map((group) => (
+              <GroupCard
+                key={group.id} // Assuming `id` is unique for each group
+                groupDetails={group} // Pass the entire group object
+                className="ms-3"
+              />
             ))}
           </div>
         </div>
@@ -73,9 +96,7 @@ const Dashboard = () => {
           <h3>Important Links</h3>
           <div
             className="selection-button col-md-4"
-            onClick={() => {
-              navigate("/conversations");
-            }}
+            onClick={() => navigate("/conversations")}
           >
             Conversations
             <FontAwesomeIcon icon={faCommentDots} />

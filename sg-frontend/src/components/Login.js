@@ -6,7 +6,6 @@ import axios from "axios";
 
 export default function (props) {
   const navigate = useNavigate();
-  const [message, setMessage] = useState("");
   const [currMode, setCurrMode] = useState("Login");
   const [loginForm, setLoginForm] = useState({
     email: "",
@@ -26,7 +25,9 @@ export default function (props) {
     profilePicture: null,
   });
 
-  const handleLogin = async () => {
+  const handleLogin = async (e) => {
+    e.preventDefault(); // Prevent default form submission
+
     try {
       const response = await axios.post(
         "http://localhost:3010/api/auth/login",
@@ -35,11 +36,70 @@ export default function (props) {
           password: loginForm.password,
         }
       );
-      setMessage(`Login successful: ${response.message}`);
-      console.log(message);
+
+      if (response.data.status === "success") {
+        sessionStorage.setItem("clientId", response.data.clientId);
+        sessionStorage.setItem("firstName", response.data.firstName);
+        sessionStorage.setItem("lastName", response.data.lastName);
+        sessionStorage.setItem("courseOfStudy", response.data.courseOfStudy);
+        sessionStorage.setItem("yearOfStudy", response.data.yearOfStudy);
+        sessionStorage.setItem("typeOfDegree", response.data.typeOfDegree);
+        navigate("/dashboard"); // Navigate to the dashboard
+      } else {
+        console.log("Login failed: ", response.data.message);
+      }
     } catch (error) {
-      setMessage("Login Failed!");
-      console.log(message);
+      console.error("Login failed:", error.message);
+    }
+  };
+
+  const handleSignup = async (e) => {
+    e.preventDefault(); // Prevent default form submission
+
+    try {
+      if (signUpForm.password !== signUpForm.confirmPassword) {
+        throw Error;
+      }
+      const formData = new FormData();
+
+      formData.append("username", signUpForm.firstName + signUpForm.lastName);
+      formData.append("email", signUpForm.email);
+      formData.append("password", signUpForm.password);
+      formData.append("firstName", signUpForm.firstName);
+      formData.append("lastName", signUpForm.lastName);
+      formData.append("courseOfStudy", signUpForm.courseOfStudy);
+      formData.append("yearOfStudy", signUpForm.yearOfStudy);
+      formData.append("typeOfDegree", signUpForm.typeOfDegree);
+      formData.append("gender", signUpForm.gender);
+
+      if (signUpForm.profilePicture) {
+        formData.append("profilePicture", signUpForm.profilePicture);
+      }
+
+      // Send the FormData object to the backend
+      const response = await axios.post(
+        "http://localhost:3010/api/auth/register",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      if (response.data.status === "success") {
+        sessionStorage.setItem("clientId", response.data.clientId);
+        sessionStorage.setItem("firstName", response.data.firstName);
+        sessionStorage.setItem("lastName", response.data.lastName);
+        sessionStorage.setItem("courseOfStudy", response.data.courseOfStudy);
+        sessionStorage.setItem("yearOfStudy", response.data.yearOfStudy);
+        sessionStorage.setItem("typeOfDegree", response.data.typeOfDegree);
+        navigate("/dashboard"); // Navigate to the dashboard
+      } else {
+        console.log("Signup failed: ", response.data.message);
+      }
+    } catch (error) {
+      console.error("Signup failed:", error.message);
     }
   };
 
@@ -76,7 +136,7 @@ export default function (props) {
           <div className="d-grid gap-2 mt-5">
             <button
               className={`btn btn-primary ${classes.btnColor}`}
-              onClick={handleLogin}
+              onClick={(e) => handleLogin(e)} // Pass the event
             >
               Submit
             </button>
@@ -292,8 +352,8 @@ export default function (props) {
 
             <div className="d-grid gap-2 mt-5">
               <button
-                type="submit"
                 className={`btn btn-primary ${classes.btnColor}`}
+                onClick={(e) => handleSignup(e)}
               >
                 Submit
               </button>
