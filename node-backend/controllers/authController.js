@@ -7,6 +7,51 @@ const groupModel = require("../models/groupModel");
 const { v4: uuidv4 } = require("uuid");
 const SALT_ROUNDS = 10;
 
+exports.getGroupDetails = async (req, res) => {
+  const { groupId } = req.body;
+
+  try {
+    const groupDetails = await groupModel.getGroupById(groupId);
+    // Send the response
+    res.status(201).json({
+      groupDetails,
+      status: "success",
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+//Get Groups for a team
+exports.getGroups = async (req, res) => {
+  const { clientId } = req.body;
+
+  if (!clientId) {
+    return res.status(400).json({ error: "Client ID is missing." });
+  }
+
+  try {
+    // Fetch client details
+    const clientDetails = await clientModel.getClientById(clientId);
+
+    // Resolve all group details in parallel using Promise.all
+    const groupDetails = await Promise.all(
+      clientDetails.groups.map(async (groupId) => {
+        const groupDetail = await groupModel.getGroupById(groupId);
+        return groupDetail;
+      })
+    );
+
+    // Send the response
+    res.status(201).json({
+      groupDetails: groupDetails,
+      status: "success",
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 // Create New Group Endpoint
 exports.createNewGroup = async (req, res) => {
   const {
@@ -72,7 +117,11 @@ exports.createNewGroup = async (req, res) => {
       await clientModel.addGroupToClient(memberId, groupId);
     }
 
-    res.status(201).json({ message: "Group created successfully", groupId });
+    res.status(201).json({
+      message: "Group created successfully",
+      groupId,
+      status: "success",
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -84,12 +133,10 @@ exports.addMemberToGroup = async (req, res) => {
   const { groupId, friends } = req.body;
 
   if (!groupId || !friends || !Array.isArray(friends) || friends.length === 0) {
-    return res
-      .status(400)
-      .json({
-        error:
-          "Invalid request. Provide a valid groupId and a non-empty array of friends.",
-      });
+    return res.status(400).json({
+      error:
+        "Invalid request. Provide a valid groupId and a non-empty array of friends.",
+    });
   }
 
   try {
@@ -104,11 +151,9 @@ exports.addMemberToGroup = async (req, res) => {
     );
 
     if (newMembers.length === 0) {
-      return res
-        .status(400)
-        .json({
-          error: "All provided friends are already members of the group.",
-        });
+      return res.status(400).json({
+        error: "All provided friends are already members of the group.",
+      });
     }
 
     await groupModel.addMembersToGroup(groupId, newMembers);
@@ -128,6 +173,7 @@ exports.addMemberToGroup = async (req, res) => {
 };
 
 exports.signUp = async (req, res) => {
+  console.log(req.body, req.file);
   const {
     username,
     email,
@@ -190,6 +236,11 @@ exports.signUp = async (req, res) => {
       status: "success",
       clientId: newClient.id,
       message: "SignUp Successful",
+      firstName: client.firstName,
+      lastName: client.lastName,
+      courseOfStudy: client.courseOfStudy,
+      yearOfStudy: client.yearOfStudy,
+      typeOfDegree: client.typeOfStudy,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -243,6 +294,9 @@ exports.logIn = async (req, res) => {
       clientId: client.id,
       firstName: client.firstName,
       lastName: client.lastName,
+      courseOfStudy: client.courseOfStudy,
+      yearOfStudy: client.yearOfStudy,
+      typeOfDegree: client.typeOfStudy,
       status: "success",
       message: "Login successful",
     });
@@ -269,6 +323,21 @@ exports.updateClient = async (req, res) => {
     const updatedData = req.body;
     await clientModel.updateClient(id, updatedData);
     res.status(200).json({ message: "Client updated successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getClients = async (req, res) => {
+  try {
+    const { clients } = req.body;
+    const clientDetails = await Promise.all(
+      clients.map(async (clientId) => {
+        const clientDetail = await clientModel.getClientById(clientId);
+        return clientDetail;
+      })
+    );
+    res.status(200).json({ status: "success", clientDetails });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

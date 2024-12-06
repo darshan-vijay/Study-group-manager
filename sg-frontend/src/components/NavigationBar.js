@@ -66,6 +66,15 @@ const NavigationBar = () => {
 
           {/* Notification Icon & Profile Picture */}
           <div className="ms-auto d-flex align-items-center gap-3">
+            <Button
+              variant="outline-light"
+              onClick={() => {
+                sessionStorage.clear();
+                navigate("/");
+              }}
+            >
+              Logout
+            </Button>
             {/* Notification Icon with Popover */}
             <OverlayTrigger
               trigger="click"

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import classes from "../css/Login.module.css";
 import { Container, Button } from "reactstrap";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export default function CreateGroup() {
   const navigate = new useNavigate();
@@ -10,13 +11,12 @@ export default function CreateGroup() {
     subject: "",
     groupName: "",
     description: "",
-    visibility: "public",
+    meetType: "public",
     date: "",
     time: "",
     location: "",
     locationDescription: "",
   });
-  const submitGroup = (e) => {};
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -25,9 +25,34 @@ export default function CreateGroup() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleCreateGroup = async (e) => {
     e.preventDefault();
-    console.log("Form Data Submitted:", formData);
+
+    try {
+      const payload = {
+        groupName: formData.groupName,
+        subject: formData.subject,
+        date: formData.date,
+        time: formData.time,
+        location: formData.location,
+        groupDescription: formData.description,
+        friends: [],
+        type: formData.meetType,
+        clientId: sessionStorage.getItem("clientId"),
+      };
+      const response = await axios.post(
+        "http://localhost:3010/api/auth/createGroup",
+        payload
+      );
+
+      if (response.data.status === "success") {
+        navigate("/dashboard"); // Navigate to the dashboard
+      } else {
+        console.log("Group Creation failed: ", response.data.message);
+      }
+    } catch (error) {
+      console.error("Group Creation failed:", error.message);
+    }
   };
 
   return (
@@ -35,7 +60,6 @@ export default function CreateGroup() {
       <div className={`${classes.authFormContainer} pt-5`}>
         <form
           className={`${classes.newEventContainer}`}
-          onSubmit={handleSubmit}
           style={{
             color: "white",
             padding: "2rem",
@@ -79,7 +103,7 @@ export default function CreateGroup() {
                   <input
                     type="text"
                     className="form-control"
-                    name="subject"
+                    name="groupName"
                     value={formData.groupName}
                     onChange={handleChange}
                     placeholder="Enter Group Name"
@@ -148,14 +172,14 @@ export default function CreateGroup() {
             {/* Row 4: Post Visibility */}
             <div className="row mt-3">
               <div className="col-md-12">
-                <label>Post Visibility</label>
+                <label>Meeting Type</label>
                 <div className="form-check">
                   <input
                     className="form-check-input"
                     type="radio"
-                    name="visibility"
-                    value="public"
-                    checked={formData.visibility === "public"}
+                    name="meetType"
+                    value="online"
+                    checked={formData.meetType === "public"}
                     onChange={handleChange}
                   />
                   <label className="form-check-label">Public</label>
@@ -164,9 +188,9 @@ export default function CreateGroup() {
                   <input
                     className="form-check-input"
                     type="radio"
-                    name="visibility"
-                    value="private"
-                    checked={formData.visibility === "private"}
+                    name="meetType"
+                    value="offline"
+                    checked={formData.meetType === "private"}
                     onChange={handleChange}
                   />
                   <label className="form-check-label">Private</label>
@@ -201,9 +225,8 @@ export default function CreateGroup() {
                 Cancel
               </Button>
               <button
-                type="submit"
                 className={`btn btn-primary ms-3 ${classes.btnColor} col-3`}
-                onClick={submitGroup()}
+                onClick={(e) => handleCreateGroup(e)}
               >
                 Submit
               </button>
