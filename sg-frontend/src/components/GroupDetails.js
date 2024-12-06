@@ -14,6 +14,7 @@ function GroupDetails() {
   const [groupMembers, setGroupMembers] = useState([]);
   const [messages, setMessages] = useState([]);
   const [messageInput, setMessageInput] = useState("");
+  const clientId = sessionStorage.getItem("clientId");
 
   // Fetch group details and messages
   const fetchGroupDetails = async () => {
@@ -80,7 +81,7 @@ function GroupDetails() {
           " " +
           sessionStorage.getItem("lastName"),
         text: messageInput.trim(),
-        timestamp: new Date(),
+        timestamp: new Date().toISOString(),
       };
 
       // Update messages locally
@@ -154,7 +155,11 @@ function GroupDetails() {
                     }`}
                   >
                     <p>
-                      <strong>{msg?.senderName}</strong>: {msg.text}
+                      <strong>
+                        {msg.senderId === clientId ? "" : msg.senderName}
+                      </strong>
+                      {msg.senderId !== clientId && <br />}
+                      {msg.text}
                     </p>
                     <small>{new Date(msg.timestamp).toLocaleString()}</small>
                   </div>

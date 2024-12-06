@@ -15,7 +15,7 @@ exports.createChat = async (req, res) => {
         senderId: "admin",
         senderName: "admin",
         text: "Welcome to the Group Chat",
-        timestamp: new Date(),
+        timestamp: new Date().toISOString(),
       },
     ],
   };

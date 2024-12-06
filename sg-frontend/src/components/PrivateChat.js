@@ -93,7 +93,7 @@ function PrivateChat() {
           " " +
           sessionStorage.getItem("lastName"),
         text: messageInput.trim(),
-        timestamp: new Date(),
+        timestamp: new Date().toISOString(),
       };
 
       // Update messages locally
@@ -170,7 +170,11 @@ function PrivateChat() {
                     }`}
                   >
                     <p>
-                      <strong>{msg.senderName}</strong>: {msg.text}
+                      <strong>
+                        {msg.senderId === clientId ? "" : msg.senderName}
+                      </strong>
+                      {msg.senderId !== clientId && <br />}
+                      {msg.text}
                     </p>
                     <small>{new Date(msg.timestamp).toLocaleString()}</small>
                   </div>
