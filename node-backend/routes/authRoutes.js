@@ -29,4 +29,5 @@ router.post("/addMemberToGroup", authController.addMemberToGroup);
 router.post("/getGroups", authController.getGroups);
 router.post("/getGroupDetails", authController.getGroupDetails);
 router.post("/getClients", authController.getClients);
+router.post("/getClient", authController.getClient);
 module.exports = router;

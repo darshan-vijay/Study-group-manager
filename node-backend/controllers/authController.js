@@ -332,3 +332,13 @@ exports.getClients = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+exports.getClient = async (req, res) => {
+  try {
+    const { clientId } = req.body;
+    const clientDetails = await clientModel.getClientById(clientId);
+    res.status(200).json({ status: "success", clientDetails });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};

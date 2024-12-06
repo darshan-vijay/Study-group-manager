@@ -1,68 +1,101 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../css/GroupDetails.css";
-import { Container, Row, Col, Form, Button, ListGroup } from "react-bootstrap";
+import { Container, Col, Form, Button, ListGroup } from "react-bootstrap";
 import NavigationBar from "./NavigationBar";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
-import { useParams } from "react-router-dom";
 import axios from "axios";
-import { useEffect } from "react";
 
 function GroupDetails() {
   const { groupId } = useParams();
   const navigate = useNavigate();
   const [groupData, setGroupData] = useState({});
   const [groupMembers, setGroupMembers] = useState([]);
-  const [messages, setMessages] = useState([
-    { text: "Hello, how are you?", type: "other" },
-    { text: "I'm good, thanks! How about you?", type: "self" },
-  ]);
-
+  const [messages, setMessages] = useState([]);
   const [messageInput, setMessageInput] = useState("");
 
-  const handleSendMessage = (e) => {
-    e.preventDefault();
-    if (messageInput.trim()) {
-      setMessages([...messages, { text: messageInput, type: "self" }]);
-      setMessageInput("");
-    }
-  };
-
+  // Fetch group details and messages
   const fetchGroupDetails = async () => {
     try {
+      // Fetch group details
       const response = await axios.post(
-        "http://localhost:3010/api/auth/getGroupDetails", // Assuming this endpoint exists
+        "http://localhost:3010/api/auth/getGroupDetails",
         { groupId }
       );
+
       if (response.data.status === "success") {
         setGroupData(response.data.groupDetails);
         fetchMemberData(response.data.groupDetails.members);
       } else {
         console.error("Failed to fetch group details: ", response.data.message);
-        setGroupData([]);
+      }
+
+      // Fetch messages
+      const messageResponse = await axios.post(
+        "http://localhost:3010/chat/getMessages",
+        { chatId: groupId }
+      );
+
+      if (messageResponse.data.status === "success") {
+        setMessages(messageResponse.data.chatDetails);
+      } else {
+        console.error(
+          "Failed to fetch messages: ",
+          messageResponse.data.message
+        );
       }
     } catch (error) {
-      console.error("Error fetching group details:", error.message);
-      setGroupData([]);
+      console.error("Error fetching group details or messages:", error.message);
     }
   };
 
+  // Fetch group members
   const fetchMemberData = async (clients) => {
     try {
       const response = await axios.post(
-        "http://localhost:3010/api/auth/getClients", // Assuming this endpoint exists
-        { clients: clients }
+        "http://localhost:3010/api/auth/getClients",
+        { clients }
       );
+
       if (response.data.status === "success") {
         setGroupMembers(response.data.clientDetails);
       } else {
-        console.error("Failed to fetch group details: ", response.data.message);
-        setGroupData([]);
+        console.error("Failed to fetch members: ", response.data.message);
       }
     } catch (error) {
-      console.error("Error fetching group details:", error.message);
-      setGroupData([]);
+      console.error("Error fetching members:", error.message);
+    }
+  };
+
+  // Send a message
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (messageInput.trim()) {
+      const newMessage = {
+        messageId: Date.now().toString(),
+        senderId: sessionStorage.getItem("clientId"),
+        senderName:
+          sessionStorage.getItem("firstName") +
+          " " +
+          sessionStorage.getItem("lastName"),
+        text: messageInput.trim(),
+        timestamp: new Date(),
+      };
+
+      // Update messages locally
+      setMessages([...messages, newMessage]);
+      setMessageInput("");
+
+      // Send to backend
+      try {
+        await axios.post("http://localhost:3010/chat/updateMessages", {
+          chatId: groupId,
+          newMessage,
+        });
+      } catch (error) {
+        console.error("Error sending message:", error.message);
+      }
     }
   };
 
@@ -72,10 +105,10 @@ function GroupDetails() {
 
   return (
     <>
-      <NavigationBar></NavigationBar>
+      <NavigationBar />
       <div className="outerContainer">
         <Container fluid className="app-container">
-          <div class="chatRow">
+          <div className="chatRow">
             {/* Left Side: Group Details */}
             <Col md={4} className="group-details">
               <h4>Group Details</h4>
@@ -88,15 +121,11 @@ function GroupDetails() {
                     key={client?.id}
                     className="list-group-single"
                   >
-                    {client?.firstName}
-                    {"  "} {client?.lastName}
+                    {client?.firstName} {client?.lastName}
                     <Button
                       variant="dark"
-                      className="rounded-circle d-flex justify-content-center align-items-center send-button"
-                      style={{ width: "40px", height: "40px" }}
-                      onClick={() => {
-                        navigate("../privateChat");
-                      }}
+                      className="rounded-circle send-button"
+                      onClick={() => navigate(`../privateChat/${client}`)}
                     >
                       <FontAwesomeIcon icon={faPaperPlane} />
                     </Button>
@@ -106,9 +135,7 @@ function GroupDetails() {
               <Button
                 variant="dark"
                 className="back-button"
-                onClick={() => {
-                  navigate("../dashboard");
-                }}
+                onClick={() => navigate("../dashboard")}
               >
                 Back
               </Button>
@@ -117,14 +144,19 @@ function GroupDetails() {
             {/* Right Side: Chat */}
             <Col md={8} className="chat-box">
               <div className="chat-messages">
-                {messages.map((msg, index) => (
+                {messages?.map((msg, index) => (
                   <div
                     key={index}
                     className={`message ${
-                      msg.type === "self" ? "self" : "other"
+                      msg.senderId === sessionStorage.getItem("clientId")
+                        ? "self"
+                        : "other"
                     }`}
                   >
-                    {msg.text}
+                    <p>
+                      <strong>{msg?.senderName}</strong>: {msg.text}
+                    </p>
+                    <small>{new Date(msg.timestamp).toLocaleString()}</small>
                   </div>
                 ))}
               </div>
@@ -139,7 +171,7 @@ function GroupDetails() {
                   className="chat-input"
                 />
                 <Button type="submit" variant="dark" className="send-button">
-                  Send
+                  <FontAwesomeIcon icon={faPaperPlane} />
                 </Button>
               </Form>
             </Col>

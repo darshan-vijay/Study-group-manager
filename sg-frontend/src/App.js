@@ -27,7 +27,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/createGroup" element={<CreateGroup />} />
         <Route path="/groupDetails/:groupId" element={<GroupDetails />} />
-        <Route path="/privateChat" element={<PrivateChat />} />
+        <Route path="/privateChat/:recipientId" element={<PrivateChat />} />
         <Route path="/conversations" element={<ChatList />} />
         <Route path="/joinGroup" element={<GroupList />} />
         <Route path="/connectionSearch" element={<PeopleList />} />
