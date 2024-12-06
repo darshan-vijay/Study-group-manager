@@ -11,7 +11,7 @@ export default function CreateGroup() {
     subject: "",
     groupName: "",
     description: "",
-    meetType: "public",
+    meetType: "offline",
     date: "",
     time: "",
     location: "",
@@ -45,7 +45,18 @@ export default function CreateGroup() {
         payload
       );
 
-      if (response.data.status === "success") {
+      const chatResponse = await axios.post(
+        "http://localhost:3010/chat/createChat",
+        {
+          id: response.data.groupId,
+          isGroup: true,
+        }
+      );
+
+      if (
+        response.data.status === "success" &&
+        chatResponse.data.status === "success"
+      ) {
         navigate("/dashboard"); // Navigate to the dashboard
       } else {
         console.log("Group Creation failed: ", response.data.message);
@@ -179,10 +190,10 @@ export default function CreateGroup() {
                     type="radio"
                     name="meetType"
                     value="online"
-                    checked={formData.meetType === "public"}
+                    checked={formData.meetType === "online"}
                     onChange={handleChange}
                   />
-                  <label className="form-check-label">Public</label>
+                  <label className="form-check-label">Online</label>
                 </div>
                 <div className="form-check">
                   <input
@@ -190,10 +201,10 @@ export default function CreateGroup() {
                     type="radio"
                     name="meetType"
                     value="offline"
-                    checked={formData.meetType === "private"}
+                    checked={formData.meetType === "offline"}
                     onChange={handleChange}
                   />
-                  <label className="form-check-label">Private</label>
+                  <label className="form-check-label">Offline</label>
                 </div>
               </div>
             </div>

@@ -1,11 +1,12 @@
 // authController.js
 const nodemailer = require("nodemailer"); // Import nodemailer
 const bcrypt = require("bcrypt");
-const { validationResult } = require("express-validator");
 const clientModel = require("../models/clientModel");
 const groupModel = require("../models/groupModel");
+const chatModel = require("../models/chatModel");
 const { v4: uuidv4 } = require("uuid");
 const SALT_ROUNDS = 10;
+const axios = require("axios");
 
 exports.getGroupDetails = async (req, res) => {
   const { groupId } = req.body;
@@ -71,11 +72,6 @@ exports.createNewGroup = async (req, res) => {
   }
 
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
     const existingGroup = await groupModel.getGroupByName(groupName);
     if (existingGroup) {
       return res
@@ -173,7 +169,6 @@ exports.addMemberToGroup = async (req, res) => {
 };
 
 exports.signUp = async (req, res) => {
-  console.log(req.body, req.file);
   const {
     username,
     email,
@@ -188,11 +183,6 @@ exports.signUp = async (req, res) => {
   const profilePicture = req.file;
 
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
     const existingUser = await clientModel.getClientByUsernameOrEmail(
       username,
       email
