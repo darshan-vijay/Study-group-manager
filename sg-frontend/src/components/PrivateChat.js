@@ -7,6 +7,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 
+const { v4: uuidv4 } = require("uuid");
+
 function PrivateChat() {
   const navigate = useNavigate();
   const { recipientId } = useParams();
@@ -85,15 +87,17 @@ function PrivateChat() {
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (messageInput.trim()) {
+      const currDate = Date().toISOString();
+      console.log(currDate);
       const newMessage = {
-        messageId: Date.now().toString(),
+        messageId: uuidv4(),
         senderId: clientId,
         senderName:
           sessionStorage.getItem("firstName") +
           " " +
           sessionStorage.getItem("lastName"),
         text: messageInput.trim(),
-        timestamp: new Date().toISOString(),
+        timestamp: currDate,
       };
 
       // Update messages locally
