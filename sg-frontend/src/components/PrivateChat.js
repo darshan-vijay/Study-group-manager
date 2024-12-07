@@ -87,8 +87,6 @@ function PrivateChat() {
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (messageInput.trim()) {
-      const currDate = Date().toISOString();
-      console.log(currDate);
       const newMessage = {
         messageId: uuidv4(),
         senderId: clientId,
@@ -97,7 +95,7 @@ function PrivateChat() {
           " " +
           sessionStorage.getItem("lastName"),
         text: messageInput.trim(),
-        timestamp: currDate,
+        timestamp: new Date().toISOString(),
       };
 
       // Update messages locally

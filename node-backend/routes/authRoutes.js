@@ -30,4 +30,5 @@ router.post("/getGroups", authController.getGroups);
 router.post("/getGroupDetails", authController.getGroupDetails);
 router.post("/getClients", authController.getClients);
 router.post("/getClient", authController.getClient);
+router.post("/getAllGroups", authController.getAllGroups);
 module.exports = router;

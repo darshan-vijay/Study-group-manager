@@ -1,5 +1,4 @@
 // authController.js
-const nodemailer = require("nodemailer"); // Import nodemailer
 const bcrypt = require("bcrypt");
 const clientModel = require("../models/clientModel");
 const groupModel = require("../models/groupModel");
@@ -16,6 +15,21 @@ exports.getGroupDetails = async (req, res) => {
     // Send the response
     res.status(201).json({
       groupDetails,
+      status: "success",
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getAllGroups = async (req, res) => {
+  const { groupId } = req.body;
+
+  try {
+    const groupDetails = await groupModel.getAllGroups();
+    // Send the response
+    res.status(201).json({
+      groups: groupDetails,
       status: "success",
     });
   } catch (err) {
@@ -126,45 +140,43 @@ exports.createNewGroup = async (req, res) => {
 // Add members to a group (other clients can join)
 // Add members to a group
 exports.addMemberToGroup = async (req, res) => {
-  const { groupId, friends } = req.body;
+  const { clientId, groupId } = req.body;
 
-  if (!groupId || !friends || !Array.isArray(friends) || friends.length === 0) {
+  if (!groupId || !clientId) {
     return res.status(400).json({
-      error:
-        "Invalid request. Provide a valid groupId and a non-empty array of friends.",
+      error: "Invalid request. Provide a valid groupId or clientId",
     });
   }
 
   try {
+    // Get group details
     const group = await groupModel.getGroupById(groupId);
     if (!group) {
       return res.status(404).json({ error: "Group not found." });
     }
 
-    const existingMembers = group.members || [];
-    const newMembers = friends.filter(
-      (friend) => !existingMembers.includes(friend)
-    );
-
-    if (newMembers.length === 0) {
-      return res.status(400).json({
-        error: "All provided friends are already members of the group.",
-      });
+    // Check if user is already a member
+    const isAlreadyMember = group.members.includes(clientId);
+    if (isAlreadyMember) {
+      return res
+        .status(400)
+        .json({ error: "User is already a member of the group." });
     }
 
-    await groupModel.addMembersToGroup(groupId, newMembers);
+    // Update group and client
+    await groupModel.addMemberToGroup(groupId, [clientId]);
+    await clientModel.addGroupToClient(clientId, groupId);
 
-    for (const friendId of newMembers) {
-      await clientModel.addGroupToClient(friendId, groupId);
-    }
-
-    res
-      .status(200)
-      .json({ message: "Members added successfully.", newMembers });
-  } catch (err) {
-    res
-      .status(500)
-      .json({ error: `Error adding members to the group: ${err.message}` });
+    res.status(200).json({
+      message: "User added to group successfully.",
+      groupId,
+      clientId: clientId,
+    });
+  } catch (error) {
+    console.error("Error adding member to group:", error);
+    res.status(500).json({
+      error: `Failed to add member to the group: ${error.message}`,
+    });
   }
 };
 
