@@ -1,8 +1,8 @@
 // groupModel.js
-const firestore = require('../firestore');
-const { arrayUnion } = require('firebase-admin').firestore.FieldValue;
+const firestore = require("../firestore");
+const { arrayUnion } = require("firebase-admin").firestore.FieldValue;
 
-const GROUPS_COLLECTION = 'groups';
+const GROUPS_COLLECTION = "groups";
 
 // Method to create a new group
 exports.addGroup = async (groupData) => {
@@ -12,8 +12,9 @@ exports.addGroup = async (groupData) => {
 
 // Method to get a group by its name (to avoid duplication)
 exports.getGroupByName = async (groupName) => {
-  const snapshot = await firestore.collection(GROUPS_COLLECTION)
-    .where('groupName', '==', groupName)
+  const snapshot = await firestore
+    .collection(GROUPS_COLLECTION)
+    .where("groupName", "==", groupName)
     .get();
 
   return snapshot.empty ? null : snapshot.docs[0].data();
@@ -29,16 +30,16 @@ exports.updateGroupMemberCount = async (groupId) => {
   await groupRef.update({ memberCount });
 };
 
-// Method to add members to a group
-exports.addMembersToGroup = async (groupId, newMembers) => {
+exports.addMemberToGroup = async (groupId, clientId) => {
   try {
     const groupRef = firestore.collection(GROUPS_COLLECTION).doc(groupId);
-
-    // Add new members to the existing array
-    await groupRef.update({
-      members: arrayUnion(...newMembers), // Use Firestore's arrayUnion
-      memberCount: admin.firestore.FieldValue.increment(newMembers.length), // Increment the count
-    });
+    const groupSnapshot = await groupRef.get();
+    const groupData = groupSnapshot.data();
+    if (!groupData.members.includes(clientId[0])) {
+      groupData.members.push(clientId[0]);
+      console.log(groupData);
+      await groupRef.update({ members: groupData.members });
+    }
   } catch (error) {
     throw new Error(`Error updating group members: ${error.message}`);
   }
@@ -46,12 +47,34 @@ exports.addMembersToGroup = async (groupId, newMembers) => {
 
 // Method to get a group by its ID
 exports.getGroupById = async (groupId) => {
-  const groupRef = firestore.collection(GROUPS_COLLECTION).doc(groupId);
-  const groupSnapshot = await groupRef.get();
-
-  if (!groupSnapshot.exists) {
-    return null; // Group not found
+  try {
+    const groupRef = firestore.collection(GROUPS_COLLECTION).doc(groupId);
+    const groupDoc = await groupRef.get();
+    return groupDoc.exists ? groupDoc.data() : null;
+  } catch (error) {
+    throw new Error(`Error retrieving group: ${error.message}`);
   }
+};
 
-  return groupSnapshot.data();
+// Method to get a group by its ID
+exports.getAllGroups = async () => {
+  try {
+    const groupRef = firestore.collection(GROUPS_COLLECTION);
+    const groupSnapshot = await groupRef.get();
+
+    if (groupSnapshot.empty) {
+      return []; // No groups found
+    }
+
+    // Extract data from all documents
+    const allGroups = groupSnapshot.docs.map((doc) => ({
+      id: doc.id, // Include document ID if needed
+      ...doc.data(), // Spread the document data
+    }));
+
+    return allGroups;
+  } catch (error) {
+    console.error("Error fetching groups:", error.message);
+    throw new Error("Failed to fetch groups");
+  }
 };
