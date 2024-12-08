@@ -17,7 +17,7 @@ function GroupDetails() {
   const [messages, setMessages] = useState([]);
   const [messageInput, setMessageInput] = useState("");
   const clientId = sessionStorage.getItem("clientId");
-  const chatMessagesRef = useRef(null); // Ref for chat messages container
+  const chatMessagesRef = useRef(null);
 
   // Scroll to the bottom of the chat panel
   const scrollToBottom = () => {
@@ -147,25 +147,29 @@ function GroupDetails() {
               <p>Members: {groupData?.memberCount}</p>
               <p>Description: {groupData?.groupDescription}</p>
               <ListGroup className="list-group-flush mt-2">
-                {groupMembers?.map((client) => (
-                  <ListGroup.Item
-                    key={client?.id}
-                    className="list-group-single"
-                  >
-                    {client?.firstName} {client?.lastName}
-                    <Button
-                      variant="dark"
-                      className="rounded-circle send-button"
-                      onClick={() =>
-                        navigate(`../privateChat/${client.id}`, {
-                          state: { client },
-                        })
-                      }
-                    >
-                      <FontAwesomeIcon icon={faPaperPlane} />
-                    </Button>
-                  </ListGroup.Item>
-                ))}
+                {groupMembers?.map((client) => {
+                  if (client.id != clientId) {
+                    return (
+                      <ListGroup.Item
+                        key={client?.id}
+                        className="list-group-single"
+                      >
+                        {client?.firstName} {client?.lastName}
+                        <Button
+                          variant="dark"
+                          className="rounded-circle send-button"
+                          onClick={() =>
+                            navigate(`../privateChat/${client.id}`, {
+                              state: { client },
+                            })
+                          }
+                        >
+                          <FontAwesomeIcon icon={faPaperPlane} />
+                        </Button>
+                      </ListGroup.Item>
+                    );
+                  }
+                })}
               </ListGroup>
               <Button
                 variant="dark"

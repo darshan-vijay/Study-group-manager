@@ -37,8 +37,10 @@ exports.addMemberToGroup = async (groupId, clientId) => {
     const groupData = groupSnapshot.data();
     if (!groupData.members.includes(clientId[0])) {
       groupData.members.push(clientId[0]);
-      console.log(groupData);
-      await groupRef.update({ members: groupData.members });
+      await groupRef.update({
+        members: groupData.members,
+        memberCount: memberCount + 1,
+      });
     }
   } catch (error) {
     throw new Error(`Error updating group members: ${error.message}`);
