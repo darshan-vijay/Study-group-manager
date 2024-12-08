@@ -1,12 +1,48 @@
 // authController.js
 const nodemailer = require("nodemailer"); // Import nodemailer
 const bcrypt = require("bcrypt");
+const { Storage } = require("@google-cloud/storage");
 const clientModel = require("../models/clientModel");
 const groupModel = require("../models/groupModel");
 const chatModel = require("../models/chatModel");
 const { v4: uuidv4 } = require("uuid");
 const SALT_ROUNDS = 10;
 const axios = require("axios");
+const storage = new Storage({
+  keyFilename: "./config/firebase-service-account.json", // Ensure this file exists in the config directory
+});
+const amqp = require("amqplib");
+
+
+// RabbitMQ Configuration
+let channel;
+const queueName = "profilePictureQueue";
+
+// Initialize RabbitMQ Connection
+(async () => {
+  try {
+    const connection = await amqp.connect("amqp://localhost:5672"); // Replace with your RabbitMQ URL
+    channel = await connection.createChannel();
+    await channel.assertQueue(queueName);
+    console.log("RabbitMQ initialized, queue:", queueName);
+  } catch (error) {
+    console.error("RabbitMQ connection error:", error.message);
+  }
+})();
+
+// Publish a Task to RabbitMQ
+const publishToRabbitMQ = async (message) => {
+  try {
+    if (!channel) {
+      throw new Error("RabbitMQ channel is not initialized.");
+    }
+    channel.sendToQueue(queueName, Buffer.from(JSON.stringify(message)));
+    console.log("Message published to RabbitMQ:", message);
+  } catch (error) {
+    console.error("Error publishing to RabbitMQ:", error.message);
+  }
+};
+
 
 exports.getGroupDetails = async (req, res) => {
   const { groupId } = req.body;
@@ -168,6 +204,7 @@ exports.addMemberToGroup = async (req, res) => {
   }
 };
 
+// Sign-Up Endpoint with RabbitMQ Integration
 exports.signUp = async (req, res) => {
   const {
     username,
@@ -183,6 +220,12 @@ exports.signUp = async (req, res) => {
   const profilePicture = req.file;
 
   try {
+    if (!profilePicture) {
+      return res.status(400).json({ error: "Profile picture is required." });
+    }
+    console.log("File received:", profilePicture);
+
+    // Check if user already exists
     const existingUser = await clientModel.getClientByUsernameOrEmail(
       username,
       email
@@ -193,80 +236,45 @@ exports.signUp = async (req, res) => {
         .json({ error: "User with this username or email already exists." });
     }
 
+    // Hash the password
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
-    let profilePictureUrl = null;
-    if (profilePicture) {
-      profilePictureUrl = `data:${
-        profilePicture.mimetype
-      };base64,${profilePicture.buffer.toString("base64")}`;
-    }
-
-    const clientId = uuidv4(); // Generate a unique client ID
-    const newClient = {
-      id: clientId,
-      username,
-      email,
-      password: hashedPassword,
-      firstName,
-      lastName,
-      courseOfStudy,
-      yearOfStudy,
-      typeOfDegree,
-      gender,
-      profilePictureUrl,
-      friends: [], // Initialize friends array
-      groups: [], // Initialize groups array
+    // Prepare user data and task for RabbitMQ
+    const clientId = uuidv4();
+    const message = {
+      clientId,
+      profilePicture: {
+        buffer: profilePicture.buffer.toString("base64"), // Encode to Base64
+        mimetype: profilePicture.mimetype,
+        originalname: profilePicture.originalname,
+      },
+      userData: {
+        username,
+        email,
+        password: hashedPassword,
+        firstName,
+        lastName,
+        courseOfStudy,
+        yearOfStudy,
+        typeOfDegree,
+        gender,
+      },
     };
 
-    await clientModel.addClient(newClient);
+    // Publish the task to RabbitMQ
+    await publishToRabbitMQ(message);
 
-    // Send both clientId and status: success in the response
-    res.status(201).json({
+    res.status(202).json({
       status: "success",
-      clientId: newClient.id,
-      message: "SignUp Successful",
-      firstName: client.firstName,
-      lastName: client.lastName,
-      courseOfStudy: client.courseOfStudy,
-      yearOfStudy: client.yearOfStudy,
-      typeOfDegree: client.typeOfStudy,
+      message: "Sign-up request received. Processing...",
+      clientId,
     });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  } catch (error) {
+    console.error("Sign-up error:", error.message);
+    res.status(500).json({ error: error.message });
   }
 };
 
-// Add Friend Endpoint (Add friends to user's friends list)
-exports.addFriend = async (req, res) => {
-  const { friendId } = req.body;
-  const clientId = req.clientId;
-
-  try {
-    // Check if the friend is already in the client's friends list
-    const client = await clientModel.getClientById(clientId);
-    const friend = await clientModel.getClientById(friendId);
-
-    if (!client || !friend) {
-      return res.status(404).json({ error: "Client or friend not found." });
-    }
-
-    if (client.friends.includes(friendId)) {
-      return res
-        .status(400)
-        .json({ error: "This user is already your friend." });
-    }
-
-    // Add the friend to both clients' friends lists
-    await clientModel.addFriendToClient(clientId, friendId);
-    await clientModel.addFriendToClient(friendId, clientId);
-
-    // Send success response
-    res.status(200).json({ message: "Friend added successfully." });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
 
 // Login Endpoint
 exports.logIn = async (req, res) => {
