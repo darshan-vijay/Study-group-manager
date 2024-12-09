@@ -22,12 +22,48 @@ router.post(
   upload.single("profilePicture"),
   authController.signUp
 );
-router.post("/login", authController.logIn);
-router.delete("/delete/:id", authController.deleteClient);
-router.post("/createGroup", authController.createNewGroup);
-router.post("/addMemberToGroup", authController.addMemberToGroup);
-router.post("/getGroups", authController.getGroups);
-router.post("/getGroupDetails", authController.getGroupDetails);
-router.post("/getClients", authController.getClients);
-router.post("/getClient", authController.getClient);
+// Route for user login
+router.post('/login', authController.logIn);
+
+// Route for searching users by username
+router.post('/search-users', authController.getClientByUsername);
+
+// Route for sending a friend request
+router.post('/send-friend-request', authController.sendFriendRequest);
+
+// Route for accepting a friend request
+router.post('/accept-friend-request', authController.acceptFriendRequest);
+
+// Route for rejecting a friend request
+router.post('/reject-friend-request', authController.rejectFriendRequest);
+
+// Route for getting group details
+router.post('/group-details', authController.getGroupDetails);
+
+// Route for getting groups for a specific client
+router.post('/get-groups', authController.getGroups);
+
+// Route for creating a new group
+router.post('/create-group', authController.createNewGroup);
+
+// Route for adding members to a group
+router.post('/add-member-to-group', authController.addMemberToGroup);
+
+// Route for adding a friend
+router.post('/add-friend', authController.addFriend);
+
+// Route for updating client information
+router.put('/update-client/:id', authController.updateClient);
+
+// Route for deleting a client
+router.delete('/delete-client/:id', authController.deleteClient);
+
+// Route for getting a list of clients' details
+router.post('/get-clients', authController.getClients);
+
+// Route for getting details of a specific client
+router.post('/get-client', authController.getClient);
+// create group page la search bar
+router.post('/searchfriends',authController.searchFriends);
+
 module.exports = router;
