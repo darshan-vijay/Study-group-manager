@@ -1,9 +1,11 @@
 // authroutes.js
 
+
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 const authController = require("../controllers/authController");
+console.log(authController);
 const storage = multer.memoryStorage();
 const upload = multer({
   storage,
