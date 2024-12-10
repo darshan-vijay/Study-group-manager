@@ -5,6 +5,7 @@ const { Storage } = require("@google-cloud/storage");
 const clientModel = require("../models/clientModel");
 const groupModel = require("../models/groupModel");
 const chatModel = require("../models/chatModel");
+const friendRequestModel = require("../models/friendRequestModel");
 const { v4: uuidv4 } = require("uuid");
 const SALT_ROUNDS = 10;
 const axios = require("axios");
@@ -348,5 +349,128 @@ exports.getClient = async (req, res) => {
     res.status(200).json({ status: "success", clientDetails });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+};
+
+// Send a Friend Request
+exports.sendFriendRequest = async (req, res) => {
+  const { senderId, receiverId } = req.body;
+
+  // Validate request body
+  if (!senderId || !receiverId) {
+    return res.status(400).json({
+      error: "Both senderId and receiverId are required in the request body.",
+    });
+  }
+
+  try {
+    // Ensure senderId and receiverId are not the same
+    if (senderId === receiverId) {
+      return res.status(400).json({
+        error: "Cannot send a friend request to yourself.",
+      });
+    }
+
+    // Verify sender and receiver exist
+    const senderExists = await clientModel.getClientById(senderId);
+    const receiverExists = await clientModel.getClientById(receiverId);
+
+    if (!senderExists) {
+      return res.status(404).json({ error: "Sender not found." });
+    }
+    if (!receiverExists) {
+      return res.status(404).json({ error: "Receiver not found." });
+    }
+
+    // Check if a friend request already exists
+    const pendingRequests = await friendRequestModel.getPendingRequests(receiverId);
+    const alreadyRequested = pendingRequests.some(
+      (request) => request.senderId === senderId
+    );
+
+    if (alreadyRequested) {
+      return res.status(400).json({
+        error: "Friend request already sent to this user.",
+      });
+    }
+
+    // Prepare friend request data
+    const requestData = {
+      senderId: senderId.trim(),  // Ensure senderId is not undefined
+      receiverId: receiverId.trim(),  // Ensure receiverId is not undefined
+      createdAt: new Date().toISOString(),
+    };
+
+    // Store friend request in the receiver's subcollection
+    const requestId = await friendRequestModel.createFriendRequest(requestData);
+
+    return res.status(201).json({
+      message: "Friend request sent successfully.",
+      requestId,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: `Failed to create friend request: ${error.message}`,
+    });
+  }
+};
+
+// Accept a Friend Request
+exports.acceptFriendRequest = async (req, res) => {
+  const { requestId, clientId } = req.body; // Ensure clientId is passed along with requestId
+
+  try {
+    const result = await friendRequestModel.acceptFriendRequest(requestId, clientId); // Pass clientId
+    res.status(200).json({ message: result });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+// Reject a Friend Request
+exports.rejectFriendRequest = async (req, res) => {
+  const { requestId, clientId } = req.body; // Ensure clientId is also passed
+
+  try {
+    const result = await friendRequestModel.rejectFriendRequest(requestId, clientId); // Pass clientId
+    res.status(200).json({ message: result });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+
+
+exports.getPendingRequests = async (req, res) => {
+  const { clientId } = req.body;
+
+  if (!clientId) {
+    return res.status(400).json({ error: "Client ID is required." });
+  }
+
+  try {
+    // Fetch pending friend requests
+    const pendingRequests = await friendRequestModel.getPendingRequests(clientId);
+
+    // Fetch sender details for each friend request
+    const requestsWithSenderDetails = await Promise.all(
+      pendingRequests.map(async (request) => {
+        const senderDetails = await clientModel.getClientById(request.senderId);
+        return {
+          ...request,
+          senderName: `${senderDetails.firstName} ${senderDetails.lastName}`,
+          senderEmail: senderDetails.email,
+        };
+      })
+    );
+
+    res.status(200).json({
+      status: "success",
+      friendRequests: requestsWithSenderDetails,
+    });
+  } catch (error) {
+    res.status(500).json({ error: `Failed to get pending requests: ${error.message}` });
   }
 };

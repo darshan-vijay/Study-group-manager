@@ -1,11 +1,11 @@
 // authroutes.js
 
-
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 const authController = require("../controllers/authController");
-console.log(authController);
+
+
 const storage = multer.memoryStorage();
 const upload = multer({
   storage,
@@ -24,12 +24,21 @@ router.post(
   upload.single("profilePicture"),
   authController.signUp
 );
-router.post("/login", authController.logIn);
-router.delete("/delete/:id", authController.deleteClient);
-router.post("/createGroup", authController.createNewGroup);
-router.post("/addMemberToGroup", authController.addMemberToGroup);
-router.post("/getGroups", authController.getGroups);
-router.post("/getGroupDetails", authController.getGroupDetails);
-router.post("/getClients", authController.getClients);
-router.post("/getClient", authController.getClient);
+// Route for user login
+router.post('/login', authController.logIn);
+
+// Route for sending a friend request
+router.post('/send-friend-request', authController.sendFriendRequest);
+
+// Route for accepting a friend request
+router.post('/accept-friend-request', authController.acceptFriendRequest);
+
+// Route for rejecting a friend request
+router.post('/reject-friend-request', authController.rejectFriendRequest);
+
+
+
+router.post('/get-pending-requests', authController.getPendingRequests);
+
+
 module.exports = router;
