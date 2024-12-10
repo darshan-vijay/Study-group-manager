@@ -31,7 +31,7 @@ function GroupDetails() {
     try {
       // Fetch group details
       const response = await axios.post(
-        "http://localhost:3010/api/auth/getGroupDetails",
+        "http://localhost:3010/api/auth/group-details",
         { groupId }
       );
 
@@ -65,7 +65,7 @@ function GroupDetails() {
   const fetchMemberData = async (clients) => {
     try {
       const response = await axios.post(
-        "http://localhost:3010/api/auth/getClients",
+        "http://localhost:3010/api/auth/get-clients",
         { clients }
       );
 
@@ -101,7 +101,7 @@ function GroupDetails() {
       });
       // Send to backend
       try {
-        await axios.post("http://localhost:3010/chat/updateMessages", {
+        await axios.post("http://localhost:3010/chat/update-messages", {
           chatId: groupId,
           newMessage,
         });

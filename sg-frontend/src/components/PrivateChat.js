@@ -33,7 +33,7 @@ function PrivateChat() {
   const fetchRecipientDetails = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:3010/api/auth/getClient",
+        "http://localhost:3010/api/auth/get-client",
         { clientId: recipientId }
       );
       if (response.data.status === "success") {

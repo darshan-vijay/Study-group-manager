@@ -25,10 +25,7 @@ export default function CreateGroup() {
     currentDate.getTime() - currentDate.getTimezoneOffset() * 60000
   );
   const formattedDate = localDate.toISOString().split("T")[0]; // Local date in YYYY-MM-DD format
-  const currentTime = new Date()
-    .toTimeString()
-    .split(" ")[0]
-    .substring(0, 5); // Current time in HH:MM format
+  const currentTime = new Date().toTimeString().split(" ")[0].substring(0, 5); // Current time in HH:MM format
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -54,7 +51,7 @@ export default function CreateGroup() {
         clientId: sessionStorage.getItem("clientId"),
       };
       const response = await axios.post(
-        "http://localhost:3010/api/auth/createGroup",
+        "http://localhost:3010/api/auth/create-group",
         payload
       );
 
