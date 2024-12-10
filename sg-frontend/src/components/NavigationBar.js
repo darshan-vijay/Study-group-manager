@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react"; // Ensure useEffect is imported
 import {
   Container,
   Navbar,
@@ -11,15 +11,26 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars, faBell } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
+import { useSocket } from "./SocketContext";
+import { Toast, ToastContainer } from "react-bootstrap";
 
-const NavigationBar = () => {
+const NavigationBar = (props) => {
+  const { groupId } = props;
+  const socket = useSocket();
   const navigate = useNavigate();
   const [showSidebar, setShowSidebar] = useState(false);
-  const [notifications] = useState([
-    "New message from John",
-    "Meeting scheduled at 3 PM",
-    "Reminder: Submit your project",
-  ]);
+  const [notifications, setNotifications] = useState([]);
+  const [message, setMessage] = useState("Initial toast message!");
+  const [heading, setHeading] = useState("Notification");
+  const [showToast, setShowToast] = useState(false);
+  const clientId = sessionStorage.getItem("clientId");
+
+  const handleShowToast = (message, heading = null) => {
+    setMessage(message);
+    setHeading(heading || "Notification");
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000); // Hide toast after 3 seconds
+  };
 
   // Toggle sidebar visibility
   const toggleSidebar = () => setShowSidebar(!showSidebar);
@@ -43,6 +54,34 @@ const NavigationBar = () => {
       </Popover.Body>
     </Popover>
   );
+
+  useEffect(() => {
+    // Listen for a message from the server
+    socket.on("notify", (data) => {
+      setNotifications((prevNotifications) => [
+        ...prevNotifications,
+        data.message,
+      ]);
+      handleShowToast(data.message);
+    });
+
+    socket.on("groupNotification", (data) => {
+      if (data.message.senderId !== clientId) {
+        let message = `Message from ${data.message.senderName}`;
+        let heading = `Group Message - ${data.groupName}`;
+        setNotifications((prevNotifications) => [
+          ...prevNotifications,
+          message,
+        ]);
+        handleShowToast(message, heading);
+      }
+    });
+
+    // Clean up when component is unmounted
+    return () => {
+      socket.off("notify");
+    };
+  }, [socket]);
 
   return (
     <>
@@ -114,6 +153,17 @@ const NavigationBar = () => {
           </Nav>
         </Offcanvas.Body>
       </Offcanvas>
+
+      {/* Toast for Notifications */}
+      <ToastContainer position="top-end" className="p-3">
+        <Toast show={showToast} onClose={() => setShowToast(false)}>
+          <Toast.Header>
+            <strong className="me-auto">{heading}</strong>
+            <small>just now</small>
+          </Toast.Header>
+          <Toast.Body>{message}</Toast.Body>
+        </Toast>
+      </ToastContainer>
     </>
   );
 };

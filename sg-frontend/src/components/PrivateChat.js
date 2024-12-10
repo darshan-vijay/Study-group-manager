@@ -7,6 +7,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 
+const { v4: uuidv4 } = require("uuid");
+
 function PrivateChat() {
   const navigate = useNavigate();
   const { recipientId } = useParams();
@@ -86,7 +88,7 @@ function PrivateChat() {
     e.preventDefault();
     if (messageInput.trim()) {
       const newMessage = {
-        messageId: Date.now().toString(),
+        messageId: uuidv4(),
         senderId: clientId,
         senderName:
           sessionStorage.getItem("firstName") +

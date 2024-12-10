@@ -24,6 +24,7 @@ router.post(
   upload.single("profilePicture"),
   authController.signUp
 );
+
 // Route for user login
 router.post('/login', authController.logIn);
 
@@ -42,3 +43,7 @@ router.post('/get-pending-requests', authController.getPendingRequests);
 
 
 module.exports = router;
+
+
+
+ 

@@ -4,17 +4,18 @@ const { v4: uuidv4 } = require("uuid");
 // Create a new chat
 exports.createChat = async (req, res) => {
   const { id, isGroup } = req.body;
+  const chatName = isGroup ? "Group Chat" : "Private Chat";
   const ChatObject = {
     chatId: id,
     isGroupChat: isGroup,
-    chatName: isGroup ? "Group Chat" : "Private Chat",
+    chatName: chatName,
     participants: [],
     messages: [
       {
         messageId: uuidv4(),
         senderId: "admin",
-        senderName: "admin",
-        text: "Welcome to the Group Chat",
+        senderName: "Admin",
+        text: `Welcome to ${chatName}`,
         timestamp: new Date().toISOString(),
       },
     ],
@@ -58,11 +59,9 @@ exports.getMessages = async (req, res) => {
 // Update the messages array of a particular chatId
 exports.updateMessages = async (req, res) => {
   const { chatId, newMessage } = req.body;
-
   const messageObject = {
     messageId: uuidv4(),
     ...newMessage,
-    timestamp: new Date(),
   };
 
   try {
