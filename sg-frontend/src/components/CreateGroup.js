@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 export default function CreateGroup() {
-  const navigate = new useNavigate();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     title: "",
     subject: "",
@@ -16,7 +16,20 @@ export default function CreateGroup() {
     time: "",
     location: "",
     locationDescription: "",
+    friendsSearch: "", // Added state for friends search
   });
+
+  // Get the current date and time for validation
+  const currentDate = new Date();
+  const localDate = new Date(
+    currentDate.getTime() - currentDate.getTimezoneOffset() * 60000
+  );
+  const formattedDate = localDate.toISOString().split("T")[0]; // Local date in YYYY-MM-DD format
+  const currentTime = new Date()
+    .toTimeString()
+    .split(" ")[0]
+    .substring(0, 5); // Current time in HH:MM format
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -36,7 +49,7 @@ export default function CreateGroup() {
         time: formData.time,
         location: formData.location,
         groupDescription: formData.description,
-        friends: [],
+        friends: [], // You might want to update this based on selected friends
         type: formData.meetType,
         clientId: sessionStorage.getItem("clientId"),
       };
@@ -134,6 +147,7 @@ export default function CreateGroup() {
                     name="date"
                     value={formData.date}
                     onChange={handleChange}
+                    min={formattedDate} // Prevent past dates using the local date
                   />
                 </div>
               </div>
@@ -146,6 +160,7 @@ export default function CreateGroup() {
                     name="time"
                     value={formData.time}
                     onChange={handleChange}
+                    min={currentTime} // Prevent past times
                   />
                 </div>
               </div>
@@ -164,7 +179,7 @@ export default function CreateGroup() {
               </div>
             </div>
 
-            {/* Row 3: Desc*/}
+            {/* Row 3: Group Description */}
             <div className="row mt-3">
               <div className="col-md-12">
                 <div className="form-group">
@@ -180,9 +195,10 @@ export default function CreateGroup() {
               </div>
             </div>
 
-            {/* Row 4: Post Visibility */}
+            {/* Row 4: Meeting Type and Add Your Friends */}
             <div className="row mt-3">
-              <div className="col-md-12">
+              {/* Meeting Type Section */}
+              <div className="col-md-6">
                 <label>Meeting Type</label>
                 <div className="form-check">
                   <input
@@ -207,9 +223,24 @@ export default function CreateGroup() {
                   <label className="form-check-label">Offline</label>
                 </div>
               </div>
+
+              {/* Add Your Friends Section */}
+              <div className="col-md-6">
+                <label>Add your friends</label>
+                <input
+                  type="text"
+                  className="form-control mt-2"
+                  name="friendsSearch"
+                  value={formData.friendsSearch}
+                  onChange={handleChange}
+                  placeholder="Search friends..."
+                  style={{ maxWidth: "100%", height: "38px" }} // Customize size as needed
+                />
+                {/* You can add additional functionality here, such as displaying search results */}
+              </div>
             </div>
 
-            {/* Row 4: Location Description */}
+            {/* Row 5: Location Description */}
             <div className="row mt-3">
               <div className="col-md-12">
                 <div className="form-group">
@@ -226,7 +257,10 @@ export default function CreateGroup() {
             </div>
 
             {/* Submit Button */}
-            <div className="row mt-4 " style={{ justifyContent: "right" }}>
+            <div
+              className="row mt-4"
+              style={{ justifyContent: "right", alignItems: "center" }}
+            >
               <Button
                 className={`btn outline-dark col-3`}
                 onClick={() => {
@@ -236,6 +270,7 @@ export default function CreateGroup() {
                 Cancel
               </Button>
               <button
+                type="submit"
                 className={`btn btn-primary ms-3 ${classes.btnColor} col-3`}
                 onClick={(e) => handleCreateGroup(e)}
               >
