@@ -37,7 +37,7 @@ const GroupList = () => {
   const fetchAllGroups = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:3010/api/auth/getAllGroups"
+        "http://localhost:3010/api/auth/group-details"
       );
 
       if (response.data.status === "success") {
@@ -57,7 +57,7 @@ const GroupList = () => {
   const joinGroup = async (groupId) => {
     try {
       const response = await axios.post(
-        "http://localhost:3010/api/auth/addMemberToGroup",
+        "http://localhost:3010/api/auth/add-member-to-group",
         {
           groupId: groupId,
           clientId: sessionStorage.getItem("clientId"),

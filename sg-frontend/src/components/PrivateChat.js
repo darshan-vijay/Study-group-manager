@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "../css/GroupDetails.css";
 import { Container, Col, Form, Button } from "react-bootstrap";
 import NavigationBar from "./NavigationBar";
@@ -6,28 +6,34 @@ import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
-
-const { v4: uuidv4 } = require("uuid");
+import { useSocket } from "./SocketContext";
+import { v4 as uuidv4 } from "uuid";
 
 function PrivateChat() {
+  const socket = useSocket();
   const navigate = useNavigate();
   const { recipientId } = useParams();
   const [messages, setMessages] = useState([]);
   const [messageInput, setMessageInput] = useState("");
   const [recipientData, setRecipientData] = useState({});
   const clientId = sessionStorage.getItem("clientId");
+  const chatMessagesRef = useRef(null);
 
-  // Generate a unique chatId based on clientId and recipientId
+  const scrollToBottom = () => {
+    if (chatMessagesRef.current) {
+      chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight;
+    }
+  };
+
   const chatId =
     clientId > recipientId
       ? `${clientId}_${recipientId}`
       : `${recipientId}_${clientId}`;
 
-  // Fetch recipient details
   const fetchRecipientDetails = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:3010/api/auth/getClient",
+        "http://localhost:3010/api/auth/get-client",
         { clientId: recipientId }
       );
       if (response.data.status === "success") {
@@ -43,7 +49,6 @@ function PrivateChat() {
     }
   };
 
-  // Fetch messages
   const fetchMessages = async () => {
     try {
       const response = await axios.post(
@@ -51,7 +56,7 @@ function PrivateChat() {
         { chatId }
       );
       if (response.data.status === "success") {
-        setMessages(response.data.chatDetails);
+        setMessages(response.data.chatDetails || []);
       } else {
         console.error("Failed to fetch messages:", response.data.message);
       }
@@ -60,49 +65,48 @@ function PrivateChat() {
     }
   };
 
-  // Create chat if it doesn't exist
   const createChatIfNeeded = async () => {
     try {
-      // Check if the chat already exists
       const response = await axios.post(
         "http://localhost:3010/chat/getMessages",
         { chatId }
       );
-      if (response.data.status == "Not Found") {
-        // If chat doesn't exist, create a new one
+      if (response.data.status === "Not Found") {
         await axios.post("http://localhost:3010/chat/createChat", {
           id: chatId,
-          isGroup: false, // false because it's a private chat
+          isGroup: false,
         });
-        fetchMessages(); // Fetch messages after creating chat
+        fetchMessages();
       } else {
-        fetchMessages(); // Fetch messages if chat already exists
+        fetchMessages();
       }
     } catch (error) {
-      console.error("Error handling chat creation:", error.message);
+      console.error("Error creating or fetching chat:", error.message);
     }
   };
 
-  // Send a message
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (messageInput.trim()) {
       const newMessage = {
         messageId: uuidv4(),
         senderId: clientId,
-        senderName:
-          sessionStorage.getItem("firstName") +
-          " " +
-          sessionStorage.getItem("lastName"),
+        senderName: `${sessionStorage.getItem(
+          "firstName"
+        )} ${sessionStorage.getItem("lastName")}`,
         text: messageInput.trim(),
         timestamp: new Date().toISOString(),
       };
 
-      // Update messages locally
       setMessages([...messages, newMessage]);
       setMessageInput("");
 
-      // Send to backend
+      socket.emit("privateMessage", {
+        clientId,
+        recipientId,
+        message: newMessage,
+      });
+
       try {
         await axios.post("http://localhost:3010/chat/updateMessages", {
           chatId,
@@ -115,9 +119,31 @@ function PrivateChat() {
   };
 
   useEffect(() => {
+    const handlePrivateReply = (data) => {
+      const currChatId =
+        data.clientId > data.recipientId
+          ? `${data.clientId}_${data.recipientId}`
+          : `${data.recipientId}_${data.clientId}`;
+      if (chatId === currChatId) {
+        setMessages((prevMessages) => [...prevMessages, data.message]);
+      }
+    };
+
+    socket.on("privateReply", handlePrivateReply);
+
+    return () => {
+      socket.off("privateReply", handlePrivateReply);
+    };
+  }, [socket, chatId]);
+
+  useEffect(() => {
     fetchRecipientDetails();
-    createChatIfNeeded(); // Ensure chat is created or fetched
+    createChatIfNeeded();
   }, [chatId]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   return (
     <>
@@ -125,7 +151,6 @@ function PrivateChat() {
       <div className="outerContainer">
         <Container fluid className="app-container">
           <div className="chatRow">
-            {/* Left Side: Recipient Details */}
             <Col md={4} className="group-details">
               <h4>
                 {recipientData?.firstName} {recipientData?.lastName}
@@ -141,29 +166,26 @@ function PrivateChat() {
                   style={{ width: "200px", height: "200px" }}
                 />
               </div>
-              <p className="mt-3">
-                <b>Department: </b> {recipientData?.department || "Unknown"}
+              <p>
+                <b>Department:</b> {recipientData?.department || "Unknown"}
               </p>
               <p>
-                <b>Year of Study: </b> {recipientData?.yearOfStudy || "Unknown"}
+                <b>Year of Study:</b> {recipientData?.yearOfStudy || "Unknown"}
               </p>
               <p>
-                <b>Interests: </b> {recipientData?.interests || "Unknown"}
+                <b>Interests:</b> {recipientData?.interests || "Unknown"}
               </p>
               <Button
                 variant="dark"
                 className="back-button"
-                onClick={() => {
-                  navigate("../dashboard");
-                }}
+                onClick={() => navigate("../dashboard")}
               >
                 Back
               </Button>
             </Col>
 
-            {/* Right Side: Chat */}
             <Col md={8} className="chat-box">
-              <div className="chat-messages">
+              <div className="chat-messages" ref={chatMessagesRef}>
                 {messages?.map((msg, index) => (
                   <div
                     key={index}
@@ -173,7 +195,7 @@ function PrivateChat() {
                   >
                     <p>
                       <strong>
-                        {msg.senderId === clientId ? "" : msg.senderName}
+                        {msg.senderId !== clientId && msg.senderName}
                       </strong>
                       {msg.senderId !== clientId && <br />}
                       {msg.text}
@@ -183,7 +205,6 @@ function PrivateChat() {
                 ))}
               </div>
 
-              {/* Chat Input */}
               <Form onSubmit={handleSendMessage} className="chat-input-form">
                 <Form.Control
                   type="text"

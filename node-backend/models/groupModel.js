@@ -1,5 +1,6 @@
-const firestore = require('../firestore');
-const { arrayUnion, increment } = require('firebase-admin').firestore.FieldValue;
+const firestore = require("../firestore");
+const { arrayUnion, increment } =
+  require("firebase-admin").firestore.FieldValue;
 
 const GROUPS_COLLECTION = "groups";
 
@@ -22,7 +23,7 @@ exports.updateGroupMemberCount = async (groupId) => {
   const groupSnapshot = await groupRef.get();
 
   if (!groupSnapshot.exists) {
-    throw new Error('Group not found.');
+    throw new Error("Group not found.");
   }
 
   const groupData = groupSnapshot.data();
@@ -33,11 +34,15 @@ exports.updateGroupMemberCount = async (groupId) => {
 exports.addMembersToGroup = async (groupId, newMembers) => {
   try {
     const groupRef = firestore.collection(GROUPS_COLLECTION).doc(groupId);
-
-    await groupRef.update({
-      members: arrayUnion(...newMembers),
-      memberCount: increment(newMembers.length),
-    });
+    const groupSnapshot = await groupRef.get();
+    const groupData = groupSnapshot.data();
+    if (!groupData.members.includes(clientId[0])) {
+      groupData.members.push(clientId[0]);
+      await groupRef.update({
+        members: groupData.members,
+        memberCount: memberCount + 1,
+      });
+    }
   } catch (error) {
     throw new Error(`Error updating group members: ${error.message}`);
   }
