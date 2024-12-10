@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "rabbitmq": "^0.0.2"
+  }
+}

@@ -16,7 +16,7 @@ import ChatList from "./components/ChatList";
 import GroupList from "./components/GroupList";
 import PeopleList from "./components/PeopleList";
 import ProfilePage from "./components/ProfilePage";
-
+import FriendRequests from "./components/FriendRequests";
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -32,6 +32,7 @@ function App() {
         <Route path="/joinGroup" element={<GroupList />} />
         <Route path="/connectionSearch" element={<PeopleList />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/friendRequests" element={<FriendRequests />} />
       </Routes>
     </Router>
   );
