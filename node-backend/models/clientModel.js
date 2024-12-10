@@ -47,6 +47,7 @@ exports.updateClient = async (id, data) => {
 exports.getClientById = async (clientId) => {
   const clientRef = firestore.collection(CLIENTS_COLLECTION).doc(clientId);
   const clientSnapshot = await clientRef.get();
+  
   return clientSnapshot.exists ? clientSnapshot.data() : null;
 };
 
@@ -97,3 +98,29 @@ exports.getClientsByGroupId = async (groupId) => {
     .get();
   return snapshot.docs.map(doc => doc.data());
 };
+
+// Get Client by Username
+exports.getClientByUsername = async (username) => {
+  if (!username || typeof username !== 'string' || !username.trim()) {
+    throw new Error('Invalid username.');
+  }
+
+  const snapshot = await firestore.collection(CLIENTS_COLLECTION)
+    .where('username', '==', username)
+    .get();
+
+  return snapshot.empty ? null : { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
+};
+
+exports.getFriendsList = async (clientId) => {
+  const clientRef = firestore.collection(CLIENTS_COLLECTION).doc(clientId);
+  const clientSnapshot = await clientRef.get();
+
+  if (!clientSnapshot.exists) {
+    throw new Error('Client not found.');
+  }
+
+  const clientData = clientSnapshot.data();
+  return Array.isArray(clientData.friends) ? clientData.friends : [];
+};
+
