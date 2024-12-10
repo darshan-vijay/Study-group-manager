@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "../css/GroupDetails.css";
 import { Container, Col, Form, Button, ListGroup } from "react-bootstrap";
 import NavigationBar from "./NavigationBar";
@@ -6,8 +6,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
+import { useSocket } from "./SocketContext";
 
 function GroupDetails() {
+  const socket = useSocket();
   const { groupId } = useParams();
   const navigate = useNavigate();
   const [groupData, setGroupData] = useState({});
@@ -15,6 +17,14 @@ function GroupDetails() {
   const [messages, setMessages] = useState([]);
   const [messageInput, setMessageInput] = useState("");
   const clientId = sessionStorage.getItem("clientId");
+  const chatMessagesRef = useRef(null); // Ref for chat messages container
+
+  // Scroll to the bottom of the chat panel
+  const scrollToBottom = () => {
+    if (chatMessagesRef.current) {
+      chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight;
+    }
+  };
 
   // Fetch group details and messages
   const fetchGroupDetails = async () => {
@@ -83,11 +93,12 @@ function GroupDetails() {
         text: messageInput.trim(),
         timestamp: new Date().toISOString(),
       };
-
-      // Update messages locally
-      setMessages([...messages, newMessage]);
       setMessageInput("");
-
+      socket.emit("groupMessage", {
+        groupId: groupId,
+        groupName: groupData.groupName,
+        message: newMessage,
+      });
       // Send to backend
       try {
         await axios.post("http://localhost:3010/chat/updateMessages", {
@@ -104,9 +115,28 @@ function GroupDetails() {
     fetchGroupDetails();
   }, [groupId]);
 
+  useEffect(() => {
+    const handleGroupNotification = (data) => {
+      if (data.groupId === groupId) {
+        setMessages((messages) => [...messages, data.message]);
+      }
+    };
+
+    socket.on("groupNotification", handleGroupNotification);
+
+    // Clean up the listener when the component unmounts or groupId changes
+    return () => {
+      socket.off("groupNotification", handleGroupNotification);
+    };
+  }, [socket]);
+
+  useEffect(() => {
+    scrollToBottom(); // Scroll to the bottom whenever messages are updated
+  }, [messages]);
+
   return (
     <>
-      <NavigationBar />
+      <NavigationBar groupId={groupId} />
       <div className="outerContainer">
         <Container fluid className="app-container">
           <div className="chatRow">
@@ -126,7 +156,11 @@ function GroupDetails() {
                     <Button
                       variant="dark"
                       className="rounded-circle send-button"
-                      onClick={() => navigate(`../privateChat/${client}`)}
+                      onClick={() =>
+                        navigate(`../privateChat/${client.id}`, {
+                          state: { client },
+                        })
+                      }
                     >
                       <FontAwesomeIcon icon={faPaperPlane} />
                     </Button>
@@ -144,7 +178,10 @@ function GroupDetails() {
 
             {/* Right Side: Chat */}
             <Col md={8} className="chat-box">
-              <div className="chat-messages">
+              <div
+                className="chat-messages"
+                ref={chatMessagesRef} // Attach ref to the messages container
+              >
                 {messages?.map((msg, index) => (
                   <div
                     key={index}

@@ -1,5 +1,4 @@
 // authController.js
-const nodemailer = require("nodemailer"); // Import nodemailer
 const bcrypt = require("bcrypt");
 const { Storage } = require("@google-cloud/storage");
 const clientModel = require("../models/clientModel");
@@ -450,6 +449,22 @@ exports.getGroups = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+exports.getAllGroups = async (req, res) => {
+  const { groupId } = req.body;
+
+  try {
+    const groupDetails = await groupModel.getAllGroups();
+    // Send the response
+    res.status(201).json({
+      groups: groupDetails,
+      status: "success",
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 // searchFrends function in "create a group"
 exports.searchFriends = async (req, res) => { 
   const { clientId, searchQuery } = req.body;

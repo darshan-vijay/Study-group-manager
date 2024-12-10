@@ -1,46 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button, Modal, Form, ListGroup, InputGroup } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFilter } from "@fortawesome/free-solid-svg-icons";
-import { faSearch } from "@fortawesome/free-solid-svg-icons";
+import { faFilter, faSearch } from "@fortawesome/free-solid-svg-icons";
 import "../css/GroupList.css";
 import NavigationBar from "./NavigationBar";
-
-const groupData = [
-  {
-    id: 1,
-    name: "Study Group - Math",
-    time: "3:00 PM",
-    date: "Dec 5, 2024",
-    location: "Library Room 202",
-    members: 8,
-    subject: "Mathematics",
-  },
-  {
-    id: 2,
-    name: "Coding Bootcamp",
-    time: "10:00 AM",
-    date: "Dec 7, 2024",
-    location: "Tech Hub Room 12",
-    members: 15,
-    subject: "Programming",
-  },
-  {
-    id: 3,
-    name: "Yoga Class",
-    time: "6:00 AM",
-    date: "Dec 6, 2024",
-    location: "Recreation Center",
-    members: 10,
-    subject: "Wellness",
-  },
-];
+import axios from "axios";
 
 const GroupList = () => {
+  const [groupData, setGroupData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilter, setShowFilter] = useState(false);
-  const [filteredChats, setFilteredChats] = useState(groupData);
-  const [filteredGroups, setFilteredGroups] = useState(groupData);
+  const [filteredChats, setFilteredChats] = useState([]);
+  const [filteredGroups, setFilteredGroups] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState("");
 
   // Toggle filter overlay
@@ -58,10 +29,58 @@ const GroupList = () => {
   const handleSearch = () => {
     const term = searchTerm.toLowerCase();
     const filtered = groupData.filter((group) =>
-      group.name.toLowerCase().includes(term)
+      group.groupName.toLowerCase().includes(term)
     );
     setFilteredChats(filtered);
   };
+
+  const fetchAllGroups = async () => {
+    try {
+      const response = await axios.post(
+        "http://localhost:3010/api/auth/getAllGroups"
+      );
+
+      if (response.data.status === "success") {
+        console.log(response.data.groups);
+        const groups = response.data.groups;
+        setGroupData(groups);
+        setFilteredGroups(groups); // Initialize filtered groups
+        setFilteredChats(groups); // Initialize filtered chats
+      } else {
+        console.error("Failed to fetch Groups: ", response.data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching Groups:", error.message);
+    }
+  };
+
+  const joinGroup = async (groupId) => {
+    try {
+      const response = await axios.post(
+        "http://localhost:3010/api/auth/addMemberToGroup",
+        {
+          groupId: groupId,
+          clientId: sessionStorage.getItem("clientId"),
+        }
+      );
+
+      if (response.data.status === "success") {
+        console.log(response.data.groups);
+        const groups = response.data.groups;
+        setGroupData(groups);
+        setFilteredGroups(groups); // Initialize filtered groups
+        setFilteredChats(groups); // Initialize filtered chats
+      } else {
+        console.error("Failed to fetch Groups: ", response.data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching Groups:", error.message);
+    }
+  };
+
+  useEffect(() => {
+    fetchAllGroups();
+  }, []);
 
   return (
     <>
@@ -93,18 +112,23 @@ const GroupList = () => {
                 <ListGroup.Item key={group.id} className="group-item">
                   <div className="group-details-container">
                     <div className="group-details1 col-9">
-                      <div className="group-name">{group.name}</div>
+                      <div className="group-name">{group.groupName}</div>
                       <div className="group-meta">
                         <span>
                           {group.time} | {group.date}
                         </span>
                         <span>{group.location}</span>
-                        <span>Members: {group.members}</span>
+                        <span>Members: {group.memberCount}</span>
                         <span>Subject: {group.subject}</span>
                       </div>
                     </div>
 
-                    <Button variant="dark col-3 join-button">Join</Button>
+                    <Button
+                      variant="dark col-3 join-button"
+                      onClick={() => joinGroup(group.id)}
+                    >
+                      Join
+                    </Button>
                   </div>
                 </ListGroup.Item>
               ))}

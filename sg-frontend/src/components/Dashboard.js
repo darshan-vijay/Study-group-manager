@@ -12,8 +12,10 @@ import {
   faSquarePlus,
 } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
+import { useSocket } from "./SocketContext";
 
 const Dashboard = () => {
+  const socket = useSocket();
   const [groups, setGroups] = useState([]);
   const getGroups = async () => {
     try {
@@ -23,9 +25,9 @@ const Dashboard = () => {
           clientId: sessionStorage.getItem("clientId"),
         }
       );
-      console.log(response);
       if (response.data.status === "success") {
         setGroups(response.data.groupDetails);
+        socket.emit("setGroups", { groupDetails: response.data.groupDetails });
       } else {
         setGroups([]);
         console.log("Group fetch failed: ", response.data.message);
@@ -38,6 +40,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     getGroups();
+    socket.emit("setClient", { clientId: sessionStorage.getItem("clientId") });
   }, []);
 
   const navigate = useNavigate();
