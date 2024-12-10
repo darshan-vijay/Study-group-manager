@@ -16,7 +16,7 @@ exports.validateSignUp = [
   body('lastName').notEmpty().withMessage('Last name is required.'),
   body('courseOfStudy').notEmpty().withMessage('Course of study is required.'),
   body('yearOfStudy').notEmpty().withMessage('Year of study is required.')
-    .isInt({ min: 1, max: 4 }).withMessage('Year of study must be between 1 and 6.'),
+    .isInt({ min: 1, max: 4 }).withMessage('Year of study must be between 1 and 4.'),
   body('typeOfDegree').notEmpty().withMessage('Type of degree is required.'),
   body('gender').notEmpty().withMessage('Gender is required.')
     .isIn(['male', 'female', 'other']).withMessage('Gender must be "male", "female", or "other".'),

@@ -10,6 +10,7 @@ const SALT_ROUNDS = 10;
 const axios = require("axios");
 const friendRequestModel = require("../models/friendRequestModel");
 const firestore =require('../firestore');
+const amqp = require('amqplib');
 const GROUPS_COLLECTION = 'groups';
 const storage = new Storage({
   keyFilename: "./config/firebase-service-account.json", // Ensure this file exists in the config directory
@@ -46,8 +47,31 @@ const publishToRabbitMQ = async (message) => {
   }
 };
 
+// RabbitMQ URL
+const RABBITMQ_URL = 'amqp://localhost';
 
+// RabbitMQ Producer for Sign-Up Emails
+const sendSignUpEmail = async (emailData) => {
+  const connection = await amqp.connect(RABBITMQ_URL);
+  const channel = await connection.createChannel();
+  const queue = 'signup_emails';
 
+  // Assert the queue exists
+  await channel.assertQueue(queue, { durable: true });
+
+  // Send email data to the queue
+  channel.sendToQueue(queue, Buffer.from(JSON.stringify(emailData)));
+
+  console.log('Sign-up email message sent to queue:', emailData);
+
+  // Close the channel and connection
+  setTimeout(() => {
+    channel.close();
+    connection.close();
+  }, 500);
+};
+
+// Updated signUp endpoint
 exports.signUp = async (req, res) => {
   const {
     username,
@@ -63,6 +87,7 @@ exports.signUp = async (req, res) => {
   const profilePicture = req.file;
 
   try {
+    // Check for existing user
     const existingUser = await clientModel.getClientByUsernameOrEmail(username, email);
     if (existingUser) {
       const conflictField = existingUser.username === username ? 'username' : 'email';
@@ -71,15 +96,16 @@ exports.signUp = async (req, res) => {
       });
     }
 
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
+    // Handle profile picture if available
     let profilePictureUrl = null;
-    if (profilePicture) {
-      profilePictureUrl = `data:${
-        profilePicture.mimetype
-      };base64,${profilePicture.buffer.toString("base64")}`;
+    if (profilePicture && profilePicture.buffer) {
+      profilePictureUrl = `data:${profilePicture.mimetype};base64,${profilePicture.buffer.toString("base64")}`;
     }
 
+    // Create new client object
     const clientId = uuidv4();
     const newClient = {
       id: clientId,
@@ -97,22 +123,37 @@ exports.signUp = async (req, res) => {
       groups: [],
     };
 
+    // Add new client to database
     await clientModel.addClient(newClient);
 
+    // Send sign-up confirmation email via RabbitMQ
+    const emailData = {
+      username,
+      email,
+      subject: 'The Group Manager',
+      body: `Hi ${username},\n\nYou have successfully created an account in Studious.\n\nThank you,\nStudious - Team`,
+    };
+    await sendSignUpEmail(emailData);
+
+    // Return success response
     res.status(201).json({
       status: "success",
-      clientId: newClient.id,
       message: "SignUp Successful",
-      firstName: newClient.firstName,
-      lastName: newClient.lastName,
-      courseOfStudy: newClient.courseOfStudy,
-      yearOfStudy: newClient.yearOfStudy,
-      typeOfDegree: newClient.typeOfDegree,
+      client: {
+        clientId: newClient.id,
+        firstName: newClient.firstName,
+        lastName: newClient.lastName,
+        courseOfStudy: newClient.courseOfStudy,
+        yearOfStudy: newClient.yearOfStudy,
+        typeOfDegree: newClient.typeOfDegree,
+        profilePictureUrl: newClient.profilePictureUrl || null,
+      },
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 // Login Endpoint
 exports.logIn = async (req, res) => {
@@ -261,7 +302,7 @@ exports.createNewGroup = async (req, res) => {
     time,
     location,
     groupDescription,
-    friends,
+    friends = [], // Default to an empty array if friends are not provided
     type,
     clientId,
   } = req.body;
@@ -276,10 +317,11 @@ exports.createNewGroup = async (req, res) => {
       return res.status(400).json({ error: 'Group with this name already exists.' });
     }
 
-    // Fetch user's friends
     const userFriends = await clientModel.getFriendsList(clientId);
+    if (!Array.isArray(userFriends)) {
+      return res.status(500).json({ error: 'Failed to retrieve friends list.' });
+    }
 
-    // Validate each friend
     const invalidFriends = friends.filter((friend) => !userFriends.includes(friend));
     if (invalidFriends.length > 0) {
       return res.status(400).json({
@@ -288,7 +330,6 @@ exports.createNewGroup = async (req, res) => {
     }
 
     const groupId = `G${uuidv4()}`;
-
     const newGroup = {
       id: groupId,
       groupName,
@@ -298,23 +339,44 @@ exports.createNewGroup = async (req, res) => {
       location,
       groupDescription,
       createdBy: clientId,
-      members: [clientId],
-      memberCount: 1,
+      members: [clientId, ...friends],
+      memberCount: friends.length + 1,
     };
-
-    if (friends && friends.length > 0) {
-      newGroup.members = [...newGroup.members, ...friends];
-    }
 
     if (type.toLowerCase() === 'online') {
       newGroup.zoomLink = `https://zoom.us/${uuidv4()}`;
     }
 
     await groupModel.addGroup(newGroup);
-
     for (const memberId of newGroup.members) {
       await clientModel.addGroupToClient(memberId, groupId);
     }
+
+    // Publish to RabbitMQ
+    const connection = await amqp.connect('amqp://localhost');
+    const channel = await connection.createChannel();
+    const queue = 'group_emails';
+
+    await channel.assertQueue(queue, { durable: true });
+
+    for (const memberId of newGroup.members) {
+      const user = await clientModel.getClientById(memberId);
+      const emailData = {
+        email: user.email,
+        username: user.username,
+        groupName,
+        type,
+        location,
+        date,
+        time,
+        zoomLink: newGroup.zoomLink || null,
+      };
+
+      channel.sendToQueue(queue, Buffer.from(JSON.stringify(emailData)), { persistent: true });
+    }
+
+    await channel.close();
+    await connection.close();
 
     res.status(201).json({
       message: 'Group created successfully',
@@ -322,10 +384,10 @@ exports.createNewGroup = async (req, res) => {
       status: 'success',
     });
   } catch (err) {
+    console.error('Error creating group:', err.message);
     res.status(500).json({ error: err.message });
   }
 };
-
 
 exports.getGroupDetails = async (req, res) => {
   const { groupId } = req.body;
@@ -439,45 +501,41 @@ exports.searchFriends = async (req, res) => {
 
 // Add members to a group
 exports.addMemberToGroup = async (req, res) => {
-  const { groupId, friends } = req.body;
-
-  if (!groupId || !friends || !Array.isArray(friends) || friends.length === 0) {
-    return res.status(400).json({
-      error:
-        "Invalid request. Provide a valid groupId and a non-empty array of friends.",
-    });
-  }
+  const { groupId, newMembers } = req.body;
 
   try {
-    const group = await groupModel.getGroupById(groupId);
-    if (!group) {
-      return res.status(404).json({ error: "Group not found." });
-    }
-
-    const existingMembers = group.members || [];
-    const newMembers = friends.filter(
-      (friend) => !existingMembers.includes(friend)
-    );
-
-    if (newMembers.length === 0) {
-      return res.status(400).json({
-        error: "All provided friends are already members of the group.",
-      });
-    }
-
     await groupModel.addMembersToGroup(groupId, newMembers);
 
-    for (const friendId of newMembers) {
-      await clientModel.addGroupToClient(friendId, groupId);
+    // Publish to RabbitMQ
+    const connection = await amqp.connect('amqp://localhost');
+    const channel = await connection.createChannel();
+    const queue = 'group_emails';
+
+    await channel.assertQueue(queue, { durable: true });
+
+    const group = await groupModel.getGroupById(groupId);
+    for (const memberId of newMembers) {
+      const user = await clientModel.getClientById(memberId);
+      const emailData = {
+        email: user.email,
+        username: user.username,
+        groupName: group.groupName,
+        type: group.type,
+        location: group.location,
+        date: group.date,
+        time: group.time,
+        zoomLink: group.zoomLink || null,
+      };
+
+      channel.sendToQueue(queue, Buffer.from(JSON.stringify(emailData)), { persistent: true });
     }
 
-    res
-      .status(200)
-      .json({ message: "Members added successfully.", newMembers });
+    await channel.close();
+    await connection.close();
+
+    res.status(200).json({ message: 'Members added successfully', status: 'success' });
   } catch (err) {
-    res
-      .status(500)
-      .json({ error: `Error adding members to the group: ${err.message}` });
+    res.status(500).json({ error: err.message });
   }
 };
 
