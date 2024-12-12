@@ -1,0 +1,6 @@
+docker buildx build --platform linux/amd64 -t davi1493/react-app:latest .
+docker push davi1493/react-app:latest
+
+gcloud auth configure-docker
+docker tag davi1493/react-app:latest gcr.io/unified-freedom-443118-s0/react-app:latest
+docker push gcr.io/unified-freedom-443118-s0/react-app:latest

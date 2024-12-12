@@ -13,6 +13,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 import { useSocket } from "./SocketContext";
+import { ENDPOINTS } from "../constants";
 
 const Dashboard = () => {
   const socket = useSocket();
@@ -20,7 +21,7 @@ const Dashboard = () => {
   const getGroups = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:3010/api/auth/get-client-groups",
+        `${ENDPOINTS.APP_URL}/api/auth/get-client-groups`,
         {
           clientId: sessionStorage.getItem("clientId"),
         }

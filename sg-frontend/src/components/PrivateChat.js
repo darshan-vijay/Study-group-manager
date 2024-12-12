@@ -9,6 +9,8 @@ import axios from "axios";
 import { useSocket } from "./SocketContext";
 import { v4 as uuidv4 } from "uuid";
 
+import { ENDPOINTS } from "../constants";
+
 function PrivateChat() {
   const socket = useSocket();
   const navigate = useNavigate();
@@ -33,8 +35,10 @@ function PrivateChat() {
   const fetchRecipientDetails = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:3010/api/auth/get-client",
-        { clientId: recipientId }
+        `${ENDPOINTS.APP_URL}/api/auth/get-client`,
+        {
+          clientId: recipientId,
+        }
       );
       if (response.data.status === "success") {
         setRecipientData(response.data.clientDetails);
@@ -52,7 +56,7 @@ function PrivateChat() {
   const fetchMessages = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:3010/chat/getMessages",
+        `${ENDPOINTS.APP_URL}/chat/getMessages`,
         { chatId }
       );
       if (response.data.status === "success") {
@@ -68,11 +72,11 @@ function PrivateChat() {
   const createChatIfNeeded = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:3010/chat/getMessages",
+        `${ENDPOINTS.APP_URL}/chat/getMessages`,
         { chatId }
       );
       if (response.data.status === "Not Found") {
-        await axios.post("http://localhost:3010/chat/createChat", {
+        await axios.post(`${ENDPOINTS.APP_URL}/chat/createChat`, {
           id: chatId,
           isGroup: false,
         });
@@ -108,7 +112,7 @@ function PrivateChat() {
       });
 
       try {
-        await axios.post("http://localhost:3010/chat/updateMessages", {
+        await axios.post(`${ENDPOINTS.APP_URL}/chat/updateMessages`, {
           chatId,
           newMessage,
         });

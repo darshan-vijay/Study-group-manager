@@ -9,7 +9,7 @@ spec:
   selector:
     app: websocket-server
   ports:
-  - protocol: TCP
-    port: 3004
-    targetPort: 3004
+    - protocol: TCP
+      port: 3011
+      targetPort: 3011
   sessionAffinity: ClientIP

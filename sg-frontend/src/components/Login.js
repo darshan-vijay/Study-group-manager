@@ -4,6 +4,8 @@ import { Container } from "reactstrap";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
+import { ENDPOINTS } from "../constants";
+
 export default function (props) {
   const navigate = useNavigate();
   const [currMode, setCurrMode] = useState("Login");
@@ -29,13 +31,10 @@ export default function (props) {
     e.preventDefault(); // Prevent default form submission
 
     try {
-      const response = await axios.post(
-        "http://localhost:3010/api/auth/login",
-        {
-          email: loginForm.email,
-          password: loginForm.password,
-        }
-      );
+      const response = await axios.post(`${ENDPOINTS.APP_URL}/api/auth/login`, {
+        email: loginForm.email,
+        password: loginForm.password,
+      });
 
       if (response.data.status === "success") {
         sessionStorage.setItem("clientId", response.data.clientId);
@@ -78,7 +77,7 @@ export default function (props) {
 
       // Send the FormData object to the backend
       const response = await axios.post(
-        "http://localhost:3010/api/auth/register",
+        `${ENDPOINTS.APP_URL}/api/auth/register`,
         formData,
         {
           headers: {
