@@ -1,6 +1,6 @@
 Building Frontend and pushing to gcr:
 
-docker buildx build --platform linux/amd64 -t davi1493/react-app:latest .
+docker buildx build  --build-arg REACT_APP_NODE_CHAT_SERVICE=http://35.229.59.21:3011 --build-arg REACT_APP_NODE_APP_SERVICE=http://35.227.61.198:3010 \--platform linux/amd64 -t davi1493/react-app:latest .
 docker push davi1493/react-app:latest
 gcloud auth configure-docker
 docker tag davi1493/react-app:latest gcr.io/unified-freedom-443118-s0/react-app:latest

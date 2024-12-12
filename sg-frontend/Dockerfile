@@ -11,6 +11,14 @@ RUN npm ci
 # Copy the rest of the application code
 COPY . .
 
+# Set environment variables before building
+ARG REACT_APP_NODE_CHAT_SERVICE
+ARG REACT_APP_NODE_APP_SERVICE
+
+# Pass these to React during build
+ENV REACT_APP_NODE_CHAT_SERVICE=${REACT_APP_NODE_CHAT_SERVICE}
+ENV REACT_APP_NODE_APP_SERVICE=${REACT_APP_NODE_APP_SERVICE}
+
 # Build the React application
 RUN npm run build
 

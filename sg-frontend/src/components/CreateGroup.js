@@ -57,7 +57,7 @@ export default function CreateGroup() {
       );
 
       const chatResponse = await axios.post(
-        `${ENDPOINTS.APP_URL}/chat/createChat`,
+        `${ENDPOINTS.APP_URL}/chat/create-chat`,
         {
           id: response.data.groupId,
           isGroup: true,

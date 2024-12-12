@@ -56,7 +56,7 @@ function PrivateChat() {
   const fetchMessages = async () => {
     try {
       const response = await axios.post(
-        `${ENDPOINTS.APP_URL}/chat/getMessages`,
+        `${ENDPOINTS.APP_URL}/chat/get-messages`,
         { chatId }
       );
       if (response.data.status === "success") {
@@ -72,11 +72,11 @@ function PrivateChat() {
   const createChatIfNeeded = async () => {
     try {
       const response = await axios.post(
-        `${ENDPOINTS.APP_URL}/chat/getMessages`,
+        `${ENDPOINTS.APP_URL}/chat/get-messages`,
         { chatId }
       );
       if (response.data.status === "Not Found") {
-        await axios.post(`${ENDPOINTS.APP_URL}/chat/createChat`, {
+        await axios.post(`${ENDPOINTS.APP_URL}/chat/create-chat`, {
           id: chatId,
           isGroup: false,
         });
@@ -112,7 +112,7 @@ function PrivateChat() {
       });
 
       try {
-        await axios.post(`${ENDPOINTS.APP_URL}/chat/updateMessages`, {
+        await axios.post(`${ENDPOINTS.APP_URL}/chat/update-messages`, {
           chatId,
           newMessage,
         });

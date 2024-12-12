@@ -48,7 +48,7 @@ function GroupDetails() {
 
       // Fetch messages
       const messageResponse = await axios.post(
-        `${ENDPOINTS.APP_URL}/chat/getMessages`,
+        `${ENDPOINTS.APP_URL}/chat/get-messages`,
         { chatId: groupId }
       );
 

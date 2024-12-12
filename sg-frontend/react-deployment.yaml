@@ -19,8 +19,3 @@ spec:
           image: gcr.io/unified-freedom-443118-s0/react-app:latest
           ports:
             - containerPort: 80
-          env:
-            - name: NODE_CHAT_SERVICE
-              value: "ws://websocket-service.default.svc.cluster.local:3011"
-            - name: NODE_APP_SERVICE
-              value: "http://app-service.default.svc.cluster.local:3010"
