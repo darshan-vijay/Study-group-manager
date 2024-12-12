@@ -20,7 +20,7 @@ const Dashboard = () => {
   const getGroups = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:3010/api/auth/get-groups",
+        "http://localhost:3010/api/auth/get-client-groups",
         {
           clientId: sessionStorage.getItem("clientId"),
         }

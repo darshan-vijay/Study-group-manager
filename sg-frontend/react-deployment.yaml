@@ -5,7 +5,7 @@ metadata:
   labels:
     app: react-app
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: react-app
@@ -15,7 +15,7 @@ spec:
         app: react-app
     spec:
       containers:
-      - name: react-app
-        image: davi1493/react-app:latest
-        ports:
-        - containerPort: 80
+        - name: react-app
+          image: davi1493/react-app:latest
+          ports:
+            - containerPort: 80

@@ -86,14 +86,20 @@ export default function (props) {
           },
         }
       );
-
+      console.log(response);
       if (response.data.status === "success") {
-        sessionStorage.setItem("clientId", response.data.clientId);
-        sessionStorage.setItem("firstName", response.data.firstName);
-        sessionStorage.setItem("lastName", response.data.lastName);
-        sessionStorage.setItem("courseOfStudy", response.data.courseOfStudy);
-        sessionStorage.setItem("yearOfStudy", response.data.yearOfStudy);
-        sessionStorage.setItem("typeOfDegree", response.data.typeOfDegree);
+        sessionStorage.setItem("clientId", response.data.client.clientId);
+        sessionStorage.setItem("firstName", response.data.client.firstName);
+        sessionStorage.setItem("lastName", response.data.client.lastName);
+        sessionStorage.setItem(
+          "courseOfStudy",
+          response.data.client.courseOfStudy
+        );
+        sessionStorage.setItem("yearOfStudy", response.data.client.yearOfStudy);
+        sessionStorage.setItem(
+          "typeOfDegree",
+          response.data.client.typeOfDegree
+        );
         navigate("/dashboard"); // Navigate to the dashboard
       } else {
         console.log("Signup failed: ", response.data.message);

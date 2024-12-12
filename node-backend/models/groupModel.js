@@ -34,15 +34,11 @@ exports.updateGroupMemberCount = async (groupId) => {
 exports.addMembersToGroup = async (groupId, newMembers) => {
   try {
     const groupRef = firestore.collection(GROUPS_COLLECTION).doc(groupId);
-    const groupSnapshot = await groupRef.get();
-    const groupData = groupSnapshot.data();
-    if (!groupData.members.includes(clientId[0])) {
-      groupData.members.push(clientId[0]);
-      await groupRef.update({
-        members: groupData.members,
-        memberCount: memberCount + 1,
-      });
-    }
+
+    await groupRef.update({
+      members: arrayUnion(...newMembers),
+      memberCount: increment(newMembers.length),
+    });
   } catch (error) {
     throw new Error(`Error updating group members: ${error.message}`);
   }
