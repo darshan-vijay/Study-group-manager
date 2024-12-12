@@ -1,24 +1,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: app-server
+  name: websocket-server
   labels:
-    app: app-server
+    app: websocket-server
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
-      app: app-server
+      app: websocket-server
   template:
     metadata:
       labels:
-        app: app-server
+        app: websocket-server
     spec:
       containers:
-        - name: app-server
-          image: davi1493/app-server:latest
+        - name: websocket-server
+          image: gcr.io/unified-freedom-443118-s0/chat-service:latest
           ports:
-            - containerPort: 3010
+            - containerPort: 3011
           env:
             - name: REDIS_HOST
               value: "redis"

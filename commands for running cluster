@@ -1,6 +1,23 @@
+Building Frontend and pushing to gcr:
+
 docker buildx build --platform linux/amd64 -t davi1493/react-app:latest .
 docker push davi1493/react-app:latest
-
 gcloud auth configure-docker
 docker tag davi1493/react-app:latest gcr.io/unified-freedom-443118-s0/react-app:latest
 docker push gcr.io/unified-freedom-443118-s0/react-app:latest
+
+Building chat-service:
+
+docker buildx build --platform linux/amd64 -t davi1493/chat-service:latest -f Dockerfile-chat .
+docker push davi1493/chat-service:latest
+gcloud auth configure-docker
+docker tag davi1493/chat-service:latest gcr.io/unified-freedom-443118-s0/chat-service:latest
+docker push gcr.io/unified-freedom-443118-s0/chat-service:latest
+
+Building app-service:
+
+docker buildx build --platform linux/amd64 -t davi1493/app-service:latest -f Dockerfile-app .
+docker push davi1493/app-service:latest
+gcloud auth configure-docker
+docker tag davi1493/app-service:latest gcr.io/unified-freedom-443118-s0/app-service:latest
+docker push gcr.io/unified-freedom-443118-s0/app-service:latest

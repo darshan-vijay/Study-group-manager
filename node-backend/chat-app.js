@@ -1,8 +1,8 @@
-import express from "express";
-import bodyParser from "body-parser";
-import cors from "cors";
-import { createServer } from "http";
-import { Server } from "socket.io";
+const express = require("express");
+const bodyParser = require("body-parser");
+const cors = require("cors");
+const { createServer } = require("http");
+const { Server } = require("socket.io");
 
 const app = express();
 app.use(bodyParser.json());
@@ -15,7 +15,7 @@ const connections = new Map();
 
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: "*",
     methods: ["GET", "POST"],
   },
 });
