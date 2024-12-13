@@ -10,23 +10,26 @@ import GroupList from "./components/GroupList";
 import PeopleList from "./components/PeopleList";
 import ProfilePage from "./components/ProfilePage";
 import FriendRequests from "./components/FriendRequests";
+import { SocketProvider } from "./components/SocketContext";
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/createGroup" element={<CreateGroup />} />
-        <Route path="/groupDetails/:groupId" element={<GroupDetails />} />
-        <Route path="/privateChat/:recipientId" element={<PrivateChat />} />
-        <Route path="/conversations" element={<ChatList />} />
-        <Route path="/joinGroup" element={<GroupList />} />
-        <Route path="/connectionSearch" element={<PeopleList />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/friendRequests" element={<FriendRequests />} />
-      </Routes>
-    </Router>
+    <SocketProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/createGroup" element={<CreateGroup />} />
+          <Route path="/groupDetails/:groupId" element={<GroupDetails />} />
+          <Route path="/privateChat/:recipientId" element={<PrivateChat />} />
+          <Route path="/conversations" element={<ChatList />} />
+          <Route path="/joinGroup" element={<GroupList />} />
+          <Route path="/connectionSearch" element={<PeopleList />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/friendRequests" element={<FriendRequests />} />
+        </Routes>
+      </Router>
+    </SocketProvider>
   );
 }
 

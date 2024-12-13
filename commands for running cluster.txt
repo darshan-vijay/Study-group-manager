@@ -30,6 +30,15 @@ gcloud auth configure-docker
 docker tag davi1493/email-consumer:latest gcr.io/unified-freedom-443118-s0/email-consumer:latest
 docker push gcr.io/unified-freedom-443118-s0/email-consumer:latest
 
+Building profile-consumer:
+
+docker buildx build --platform linux/amd64 -t davi1493/profile-consumer:latest -f Dockerfile-profile-worker .
+docker push davi1493/profile-consumer:latest
+gcloud auth configure-docker
+docker tag davi1493/profile-consumer:latest gcr.io/unified-freedom-443118-s0/profile-consumer:latest
+docker push gcr.io/unified-freedom-443118-s0/profile-consumer:latest
+
+
 Installing and running rabbitMQ:
 
 sudo apt-get update
@@ -48,9 +57,3 @@ gcloud compute firewall-rules create allow-rabbitmq \
   --allow tcp:5672,tcp:15672 \
   --description "Allow RabbitMQ ports" 
 # add a new user as well
-  
-
-
-
-
-
