@@ -7,14 +7,14 @@ const amqp = require("amqplib");
 // Initialize Firebase Admin SDK
 admin.initializeApp({
   credential: admin.credential.cert(
-    require(path.join(__dirname, "../config/firebase-service-account.json"))
+    require(path.join(__dirname, "./firebase-service-account.json"))
   ),
 });
 const firestore = admin.firestore();
 
 // Initialize Google Cloud Storage
 const storage = new Storage({
-  keyFilename: path.join(__dirname, "../config/firebase-service-account.json"), // Adjust the relative path
+  keyFilename: path.join(__dirname, "./firebase-service-account.json"), // Adjust the relative path
 });
 const bucketName = "study-group-manager"; // Your bucket name
 const bucket = storage.bucket(bucketName);
@@ -62,7 +62,7 @@ const processFileUpload = async (message) => {
 // RabbitMQ Worker
 (async () => {
   try {
-    const connection = await amqp.connect(global.RABBIT_MQ);
+    const connection = await amqp.connect(process.env.RABBIT_MQ);
     const channel = await connection.createChannel();
     await channel.assertQueue("profilePictureQueue");
 

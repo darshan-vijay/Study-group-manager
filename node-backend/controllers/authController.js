@@ -122,8 +122,30 @@ exports.signUp = async (req, res) => {
       groups: [],
     };
 
+    const message = {
+      clientId,
+      profilePicture: {
+        buffer: profilePicture.buffer.toString("base64"), // Encode to Base64
+        mimetype: profilePicture.mimetype,
+        originalname: profilePicture.originalname,
+      },
+      userData: {
+        username,
+        email,
+        password: hashedPassword,
+        firstName,
+        lastName,
+        courseOfStudy,
+        yearOfStudy,
+        typeOfDegree,
+        gender,
+      },
+    };
+
     // Add new client to database
     await clientModel.addClient(newClient);
+
+    await publishToRabbitMQ(message);
 
     // Send sign-up confirmation email via RabbitMQ
     const emailData = {
@@ -581,77 +603,6 @@ exports.addMemberToGroup = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
-// Sign-Up Endpoint with RabbitMQ Integration
-// exports.signUp = async (req, res) => {
-//   const {
-//     username,
-//     email,
-//     password,
-//     firstName,
-//     lastName,
-//     courseOfStudy,
-//     yearOfStudy,
-//     typeOfDegree,
-//     gender,
-//   } = req.body;
-//   const profilePicture = req.file;
-
-//   try {
-//     if (!profilePicture) {
-//       return res.status(400).json({ error: "Profile picture is required." });
-//     }
-//     console.log("File received:", profilePicture);
-
-//     // Check if user already exists
-//     const existingUser = await clientModel.getClientByUsernameOrEmail(
-//       username,
-//       email
-//     );
-//     if (existingUser) {
-//       return res
-//         .status(400)
-//         .json({ error: "User with this username or email already exists." });
-//     }
-
-//     // Hash the password
-//     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-
-//     // Prepare user data and task for RabbitMQ
-//     const clientId = uuidv4();
-//     const message = {
-//       clientId,
-//       profilePicture: {
-//         buffer: profilePicture.buffer.toString("base64"), // Encode to Base64
-//         mimetype: profilePicture.mimetype,
-//         originalname: profilePicture.originalname,
-//       },
-//       userData: {
-//         username,
-//         email,
-//         password: hashedPassword,
-//         firstName,
-//         lastName,
-//         courseOfStudy,
-//         yearOfStudy,
-//         typeOfDegree,
-//         gender,
-//       },
-//     };
-
-//     // Publish the task to RabbitMQ
-//     await publishToRabbitMQ(message);
-
-//     res.status(202).json({
-//       status: "success",
-//       message: "Sign-up request received. Processing...",
-//       clientId,
-//     });
-//   } catch (error) {
-//     console.error("Sign-up error:", error.message);
-//     res.status(500).json({ error: error.message });
-//   }
-// };
 
 // Login Endpoint
 exports.logIn = async (req, res) => {
