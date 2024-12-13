@@ -5,15 +5,13 @@ metadata:
   labels:
     app: rabbitmq
 spec:
-  ports:
-  - name: amqp
-    port: 5672
-    targetPort: 5672
-    nodePort: 30072 # You can use any available port (within 30000-32767 range)
-  - name: management
-    port: 15672
-    targetPort: 15672
-    nodePort: 30073 # You can use any available port (within 30000-32767 range)
+  type: LoadBalancer
   selector:
     app: rabbitmq
-  type: NodePort
+  ports:
+    - name: amqp
+      port: 5672
+      targetPort: 5672
+    - name: management
+      port: 15672
+      targetPort: 15672

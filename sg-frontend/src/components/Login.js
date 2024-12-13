@@ -4,6 +4,8 @@ import { Container } from "reactstrap";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
+import { ENDPOINTS } from "../constants";
+
 export default function (props) {
   const navigate = useNavigate();
   const [currMode, setCurrMode] = useState("Login");
@@ -29,13 +31,10 @@ export default function (props) {
     e.preventDefault(); // Prevent default form submission
 
     try {
-      const response = await axios.post(
-        "http://localhost:3010/api/auth/login",
-        {
-          email: loginForm.email,
-          password: loginForm.password,
-        }
-      );
+      const response = await axios.post(`${ENDPOINTS.APP_URL}/api/auth/login`, {
+        email: loginForm.email,
+        password: loginForm.password,
+      });
 
       if (response.data.status === "success") {
         sessionStorage.setItem("clientId", response.data.clientId);
@@ -78,7 +77,7 @@ export default function (props) {
 
       // Send the FormData object to the backend
       const response = await axios.post(
-        "http://localhost:3010/api/auth/register",
+        `${ENDPOINTS.APP_URL}/api/auth/register`,
         formData,
         {
           headers: {
@@ -86,14 +85,20 @@ export default function (props) {
           },
         }
       );
-
+      console.log(response);
       if (response.data.status === "success") {
-        sessionStorage.setItem("clientId", response.data.clientId);
-        sessionStorage.setItem("firstName", response.data.firstName);
-        sessionStorage.setItem("lastName", response.data.lastName);
-        sessionStorage.setItem("courseOfStudy", response.data.courseOfStudy);
-        sessionStorage.setItem("yearOfStudy", response.data.yearOfStudy);
-        sessionStorage.setItem("typeOfDegree", response.data.typeOfDegree);
+        sessionStorage.setItem("clientId", response.data.client.clientId);
+        sessionStorage.setItem("firstName", response.data.client.firstName);
+        sessionStorage.setItem("lastName", response.data.client.lastName);
+        sessionStorage.setItem(
+          "courseOfStudy",
+          response.data.client.courseOfStudy
+        );
+        sessionStorage.setItem("yearOfStudy", response.data.client.yearOfStudy);
+        sessionStorage.setItem(
+          "typeOfDegree",
+          response.data.client.typeOfDegree
+        );
         navigate("/dashboard"); // Navigate to the dashboard
       } else {
         console.log("Signup failed: ", response.data.message);

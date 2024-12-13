@@ -5,12 +5,12 @@ const router = express.Router();
 const chatController = require("../controllers/chatController");
 
 // Route to create a new chat
-router.post("/createChat", chatController.createChat);
+router.post("/create-chat", chatController.createChat);
 
 // Route to fetch all messages of a chat by chatId
-router.post("/getMessages", chatController.getMessages);
+router.post("/get-messages", chatController.getMessages);
 
 // Route to update the messages array of a specific chat by chatId
-router.post("/updateMessages", chatController.updateMessages);
+router.post("/update-messages", chatController.updateMessages);
 
 module.exports = router;

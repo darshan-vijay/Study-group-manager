@@ -1,9 +1,12 @@
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
+const cors = require("cors");
+
+// Import route files
 const authRoutes = require("./routes/authRoutes");
 const chatRoutes = require("./routes/chatRoutes");
-const cors = require("cors");
+const profileRoutes = require("./routes/profileRoutes");
 
 // Middleware
 app.use(bodyParser.json());
@@ -21,10 +24,13 @@ app.use(
 
 // Routes
 app.use("/api/auth", authRoutes);
-app.use("/chat/", chatRoutes);
+app.use("/chat", chatRoutes);
+app.use("/api", profileRoutes); // Add profile routes here
 
 // Start Server
 const PORT = process.env.PORT || 3010;
+global.RABBIT_MQ = process.env.RABBIT_MQ || "amqp://localhost:5672";
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

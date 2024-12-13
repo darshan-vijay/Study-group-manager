@@ -56,7 +56,6 @@ const NavigationBar = (props) => {
   );
 
   useEffect(() => {
-    // Listen for a message from the server
     socket.on("notify", (data) => {
       setNotifications((prevNotifications) => [
         ...prevNotifications,
@@ -65,9 +64,10 @@ const NavigationBar = (props) => {
       handleShowToast(data.message);
     });
 
+    // Listen for group notifications
     socket.on("groupNotification", (data) => {
       if (data.message.senderId !== clientId) {
-        let message = `Message from ${data.message.senderName}`;
+        let message = `${data.message.senderName}:\n${data.message.text}`;
         let heading = `Group Message - ${data.groupName}`;
         setNotifications((prevNotifications) => [
           ...prevNotifications,
@@ -77,11 +77,20 @@ const NavigationBar = (props) => {
       }
     });
 
-    // Clean up when component is unmounted
+    // Listen for private messages
+    socket.on("privateReply", (data) => {
+      let message = `${data.message.senderName}:\n${data.message.text}`;
+      let heading = "Private Message";
+      setNotifications((prevNotifications) => [...prevNotifications, message]);
+      handleShowToast(message, heading);
+    });
+
     return () => {
       socket.off("notify");
+      socket.off("groupNotification");
+      socket.off("privateReply");
     };
-  }, [socket]);
+  }, [socket, clientId]);
 
   return (
     <>

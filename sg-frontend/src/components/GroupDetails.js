@@ -8,6 +8,8 @@ import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 import { useSocket } from "./SocketContext";
 
+import { ENDPOINTS } from "../constants";
+
 function GroupDetails() {
   const socket = useSocket();
   const { groupId } = useParams();
@@ -17,7 +19,7 @@ function GroupDetails() {
   const [messages, setMessages] = useState([]);
   const [messageInput, setMessageInput] = useState("");
   const clientId = sessionStorage.getItem("clientId");
-  const chatMessagesRef = useRef(null); // Ref for chat messages container
+  const chatMessagesRef = useRef(null);
 
   // Scroll to the bottom of the chat panel
   const scrollToBottom = () => {
@@ -31,8 +33,10 @@ function GroupDetails() {
     try {
       // Fetch group details
       const response = await axios.post(
-        "http://localhost:3010/api/auth/getGroupDetails",
-        { groupId }
+        `${ENDPOINTS.APP_URL}/api/auth/group-details`,
+        {
+          groupId,
+        }
       );
 
       if (response.data.status === "success") {
@@ -44,7 +48,7 @@ function GroupDetails() {
 
       // Fetch messages
       const messageResponse = await axios.post(
-        "http://localhost:3010/chat/getMessages",
+        `${ENDPOINTS.APP_URL}/chat/get-messages`,
         { chatId: groupId }
       );
 
@@ -65,8 +69,10 @@ function GroupDetails() {
   const fetchMemberData = async (clients) => {
     try {
       const response = await axios.post(
-        "http://localhost:3010/api/auth/getClients",
-        { clients }
+        `${ENDPOINTS.APP_URL}/api/auth/get-clients`,
+        {
+          clients,
+        }
       );
 
       if (response.data.status === "success") {
@@ -101,7 +107,7 @@ function GroupDetails() {
       });
       // Send to backend
       try {
-        await axios.post("http://localhost:3010/chat/updateMessages", {
+        await axios.post(`${ENDPOINTS.APP_URL}/chat/update-messages`, {
           chatId: groupId,
           newMessage,
         });
@@ -147,25 +153,29 @@ function GroupDetails() {
               <p>Members: {groupData?.memberCount}</p>
               <p>Description: {groupData?.groupDescription}</p>
               <ListGroup className="list-group-flush mt-2">
-                {groupMembers?.map((client) => (
-                  <ListGroup.Item
-                    key={client?.id}
-                    className="list-group-single"
-                  >
-                    {client?.firstName} {client?.lastName}
-                    <Button
-                      variant="dark"
-                      className="rounded-circle send-button"
-                      onClick={() =>
-                        navigate(`../privateChat/${client.id}`, {
-                          state: { client },
-                        })
-                      }
-                    >
-                      <FontAwesomeIcon icon={faPaperPlane} />
-                    </Button>
-                  </ListGroup.Item>
-                ))}
+                {groupMembers?.map((client) => {
+                  if (client.id != clientId) {
+                    return (
+                      <ListGroup.Item
+                        key={client?.id}
+                        className="list-group-single"
+                      >
+                        {client?.firstName} {client?.lastName}
+                        <Button
+                          variant="dark"
+                          className="rounded-circle send-button"
+                          onClick={() =>
+                            navigate(`../privateChat/${client.id}`, {
+                              state: { client },
+                            })
+                          }
+                        >
+                          <FontAwesomeIcon icon={faPaperPlane} />
+                        </Button>
+                      </ListGroup.Item>
+                    );
+                  }
+                })}
               </ListGroup>
               <Button
                 variant="dark"

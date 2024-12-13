@@ -1,16 +1,14 @@
-// groupModel.js
 const firestore = require("../firestore");
-const { arrayUnion } = require("firebase-admin").firestore.FieldValue;
+const { arrayUnion, increment } =
+  require("firebase-admin").firestore.FieldValue;
 
 const GROUPS_COLLECTION = "groups";
 
-// Method to create a new group
 exports.addGroup = async (groupData) => {
   const groupRef = firestore.collection(GROUPS_COLLECTION).doc(groupData.id);
   await groupRef.set(groupData);
 };
 
-// Method to get a group by its name (to avoid duplication)
 exports.getGroupByName = async (groupName) => {
   const snapshot = await firestore
     .collection(GROUPS_COLLECTION)
@@ -20,32 +18,32 @@ exports.getGroupByName = async (groupName) => {
   return snapshot.empty ? null : snapshot.docs[0].data();
 };
 
-// Method to update the group's member count
 exports.updateGroupMemberCount = async (groupId) => {
   const groupRef = firestore.collection(GROUPS_COLLECTION).doc(groupId);
   const groupSnapshot = await groupRef.get();
-  const groupData = groupSnapshot.data();
 
+  if (!groupSnapshot.exists) {
+    throw new Error("Group not found.");
+  }
+
+  const groupData = groupSnapshot.data();
   const memberCount = groupData.members.length;
   await groupRef.update({ memberCount });
 };
 
-exports.addMemberToGroup = async (groupId, clientId) => {
+exports.addMembersToGroup = async (groupId, newMembers) => {
   try {
     const groupRef = firestore.collection(GROUPS_COLLECTION).doc(groupId);
-    const groupSnapshot = await groupRef.get();
-    const groupData = groupSnapshot.data();
-    if (!groupData.members.includes(clientId[0])) {
-      groupData.members.push(clientId[0]);
-      console.log(groupData);
-      await groupRef.update({ members: groupData.members });
-    }
+
+    await groupRef.update({
+      members: arrayUnion(...newMembers),
+      memberCount: increment(newMembers.length),
+    });
   } catch (error) {
     throw new Error(`Error updating group members: ${error.message}`);
   }
 };
 
-// Method to get a group by its ID
 exports.getGroupById = async (groupId) => {
   try {
     const groupRef = firestore.collection(GROUPS_COLLECTION).doc(groupId);
