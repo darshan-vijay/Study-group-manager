@@ -153,9 +153,12 @@ const NavigationBar = (props) => {
         </Offcanvas.Header>
         <Offcanvas.Body>
           <Nav defaultActiveKey="/" className="flex-column">
-            <Nav.Link href="#">Home</Nav.Link>
-            <Nav.Link href="#">Groups</Nav.Link>
-            <Nav.Link href="#">Messages</Nav.Link>
+            <Nav.Link onClick={() => navigate("/dashboard")}>Home</Nav.Link>
+            <Nav.Link onClick={() => navigate("/joinGroup")}>Groups</Nav.Link>
+            <Nav.Link onClick={() => navigate("/conversations")}>Messages</Nav.Link>
+            <Nav.Link onClick={() => navigate("/connectionSearch")}>Connect with People</Nav.Link>
+            <Nav.Link onClick={() => navigate("/friendRequests")}>Friend Requests</Nav.Link> {/* New Link */}
+            <Nav.Link onClick={() => navigate("/profile")}>Profile</Nav.Link>
           </Nav>
         </Offcanvas.Body>
       </Offcanvas>

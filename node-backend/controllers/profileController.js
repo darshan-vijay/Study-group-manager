@@ -54,9 +54,13 @@ exports.editProfile = async (req, res) => {
       return res.status(404).json({ error: "Client not found." });
     }
 
-    const existingClient = await clientModel.getClientByUsernameOrEmail(username, email);
+    const existingClient = await clientModel.getClientByUsernameOrEmail(
+      username,
+      email
+    );
     if (existingClient && existingClient.id !== clientId) {
-      const conflictField = existingClient.username === username ? 'username' : 'email';
+      const conflictField =
+        existingClient.username === username ? "username" : "email";
       return res.status(400).json({
         error: `User with this ${conflictField} already exists.`,
       });
