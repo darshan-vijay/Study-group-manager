@@ -22,7 +22,7 @@ const queueName = "profilePictureQueue";
 // Initialize RabbitMQ Connection
 (async () => {
   try {
-    const connection = await amqp.connect("amqp://localhost:5672"); // Replace with your RabbitMQ URL
+    const connection = await amqp.connect(global.RABBIT_MQ); // Replace with your RabbitMQ URL
     channel = await connection.createChannel();
     await channel.assertQueue(queueName);
     console.log("RabbitMQ initialized, queue:", queueName);
@@ -44,12 +44,9 @@ const publishToRabbitMQ = async (message) => {
   }
 };
 
-// RabbitMQ URL
-const RABBITMQ_URL = "amqp://localhost";
-
 // RabbitMQ Producer for Sign-Up Emails
 const sendSignUpEmail = async (emailData) => {
-  const connection = await amqp.connect(RABBITMQ_URL);
+  const connection = await amqp.connect(global.RABBIT_MQ);
   const channel = await connection.createChannel();
   const queue = "signup_emails";
 
@@ -365,7 +362,7 @@ exports.createNewGroup = async (req, res) => {
     }
 
     // Publish to RabbitMQ
-    const connection = await amqp.connect("amqp://localhost");
+    const connection = await amqp.connect(global.RABBIT_MQ);
     const channel = await connection.createChannel();
     const queue = "group_emails";
 
@@ -548,7 +545,7 @@ exports.addMemberToGroup = async (req, res) => {
     await groupModel.addMembersToGroup(groupId, newMembers);
 
     // Publish to RabbitMQ
-    const connection = await amqp.connect("amqp://localhost");
+    const connection = await amqp.connect(global.RABBIT_MQ);
     const channel = await connection.createChannel();
     const queue = "group_emails";
 

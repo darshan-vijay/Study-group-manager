@@ -20,6 +20,8 @@ app.use("/api", profileRoutes); // Add profile routes here
 
 // Start Server
 const PORT = process.env.PORT || 3010;
+global.RABBIT_MQ = process.env.RABBIT_MQ || "amqp://localhost:5672";
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

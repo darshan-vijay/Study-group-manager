@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: email-consumer
+  labels:
+    app: email-consumer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: email-consumer
+  template:
+    metadata:
+      labels:
+        app: email-consumer
+    spec:
+      containers:
+        - name: email-consumer
+          image: gcr.io/unified-freedom-443118-s0/email-consumer:latest
+          env:
+            - name: RABBIT_MQ
+              value: "amqp://darshan:darshan@35.185.24.216:5672/"
