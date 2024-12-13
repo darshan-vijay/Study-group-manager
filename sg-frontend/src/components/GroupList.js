@@ -6,6 +6,8 @@ import "../css/GroupList.css";
 import NavigationBar from "./NavigationBar";
 import axios from "axios";
 
+import { ENDPOINTS } from "../constants";
+
 const GroupList = () => {
   const [groupData, setGroupData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -37,12 +39,11 @@ const GroupList = () => {
   const fetchAllGroups = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:3010/api/auth/group-details"
+        `${ENDPOINTS.APP_URL}/api/auth/get-groups`
       );
 
       if (response.data.status === "success") {
-        console.log(response.data.groups);
-        const groups = response.data.groups;
+        const groups = response.data.groupDetails;
         setGroupData(groups);
         setFilteredGroups(groups); // Initialize filtered groups
         setFilteredChats(groups); // Initialize filtered chats
@@ -57,7 +58,7 @@ const GroupList = () => {
   const joinGroup = async (groupId) => {
     try {
       const response = await axios.post(
-        "http://localhost:3010/api/auth/add-member-to-group",
+        `${ENDPOINTS.APP_URL}/api/auth/join-group`,
         {
           groupId: groupId,
           clientId: sessionStorage.getItem("clientId"),

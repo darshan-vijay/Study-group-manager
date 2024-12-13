@@ -3,6 +3,7 @@ import classes from "../css/Login.module.css";
 import { Container, Button } from "reactstrap";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { ENDPOINTS } from "../constants";
 
 export default function CreateGroup() {
   const navigate = useNavigate();
@@ -51,12 +52,12 @@ export default function CreateGroup() {
         clientId: sessionStorage.getItem("clientId"),
       };
       const response = await axios.post(
-        "http://localhost:3010/api/auth/create-group",
+        `${ENDPOINTS.APP_URL}/api/auth/create-group`,
         payload
       );
 
       const chatResponse = await axios.post(
-        "http://localhost:3010/chat/createChat",
+        `${ENDPOINTS.APP_URL}/chat/create-chat`,
         {
           id: response.data.groupId,
           isGroup: true,

@@ -8,6 +8,8 @@ import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 import { useSocket } from "./SocketContext";
 
+import { ENDPOINTS } from "../constants";
+
 function GroupDetails() {
   const socket = useSocket();
   const { groupId } = useParams();
@@ -31,8 +33,10 @@ function GroupDetails() {
     try {
       // Fetch group details
       const response = await axios.post(
-        "http://localhost:3010/api/auth/group-details",
-        { groupId }
+        `${ENDPOINTS.APP_URL}/api/auth/group-details`,
+        {
+          groupId,
+        }
       );
 
       if (response.data.status === "success") {
@@ -44,7 +48,7 @@ function GroupDetails() {
 
       // Fetch messages
       const messageResponse = await axios.post(
-        "http://localhost:3010/chat/getMessages",
+        `${ENDPOINTS.APP_URL}/chat/get-messages`,
         { chatId: groupId }
       );
 
@@ -65,8 +69,10 @@ function GroupDetails() {
   const fetchMemberData = async (clients) => {
     try {
       const response = await axios.post(
-        "http://localhost:3010/api/auth/get-clients",
-        { clients }
+        `${ENDPOINTS.APP_URL}/api/auth/get-clients`,
+        {
+          clients,
+        }
       );
 
       if (response.data.status === "success") {
@@ -101,7 +107,7 @@ function GroupDetails() {
       });
       // Send to backend
       try {
-        await axios.post("http://localhost:3010/chat/update-messages", {
+        await axios.post(`${ENDPOINTS.APP_URL}/chat/update-messages`, {
           chatId: groupId,
           newMessage,
         });

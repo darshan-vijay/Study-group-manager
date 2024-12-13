@@ -1,6 +1,5 @@
 terraform {
   cloud {
-
     organization = "DCSC-Project"
 
     workspaces {
@@ -14,7 +13,6 @@ terraform {
       version = "~> 5.0"
     }
   }
-
 }
 
 provider "google" {
@@ -23,22 +21,37 @@ provider "google" {
   region      = "us-east1"
 }
 
-# Create a GKE Cluster
-# switch off delete protection
 resource "google_container_cluster" "primary" {
   name     = "study-group-cluster"
   location = "us-east1"
 
-  initial_node_count = 1
+  remove_default_node_pool = true
+  initial_node_count       = 1
+
   node_config {
-    machine_type = "e2-micro"
+    machine_type = "e2-medium"
   }
+
   lifecycle {
     prevent_destroy = false
   }
 }
 
-# Create a Compute Instance
+resource "google_container_node_pool" "primary_nodes" {
+  name       = "primary-node-pool"
+  location   = "us-east1"
+  cluster    = google_container_cluster.primary.name
+  node_count = 1
+
+  node_config {
+    machine_type = "e2-medium"
+  }
+
+  lifecycle {
+    prevent_destroy = false
+  }
+}
+
 resource "google_compute_instance" "vm_instance" {
   name         = "rabbit-instance"
   machine_type = "e2-micro"
@@ -54,14 +67,10 @@ resource "google_compute_instance" "vm_instance" {
     network = "default"
     access_config {}
   }
-}
 
-resource "google_firestore_database" "database" {
-  name                    = "(default)"
-  location_id             = "nam5"
-  type                    = "FIRESTORE_NATIVE"
-  delete_protection_state = "DELETE_PROTECTION_DISABLED"
-  deletion_policy         = "DELETE"
+  lifecycle {
+    prevent_destroy = false
+  }
 }
 
 resource "google_storage_bucket" "default" {
@@ -87,5 +96,20 @@ resource "google_storage_bucket" "default" {
     environment = "dev"
     team        = "engineering"
   }
+
+  lifecycle {
+    prevent_destroy = false
+  }
 }
 
+resource "google_firestore_database" "database" {
+  name                    = "study-group-db"
+  location_id             = "nam5"
+  type                    = "FIRESTORE_NATIVE"
+  delete_protection_state = "DELETE_PROTECTION_DISABLED"
+  deletion_policy         = "DELETE"
+
+  lifecycle {
+    prevent_destroy = false
+  }
+}

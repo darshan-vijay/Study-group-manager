@@ -1,0 +1,56 @@
+Building Frontend and pushing to gcr:
+
+docker buildx build  --build-arg REACT_APP_NODE_CHAT_SERVICE=http://35.229.59.21:3011 --build-arg REACT_APP_NODE_APP_SERVICE=http://35.227.61.198:3010 \--platform linux/amd64 -t davi1493/react-app:latest .
+docker push davi1493/react-app:latest
+gcloud auth configure-docker
+docker tag davi1493/react-app:latest gcr.io/unified-freedom-443118-s0/react-app:latest
+docker push gcr.io/unified-freedom-443118-s0/react-app:latest
+
+Building chat-service:
+
+docker buildx build --platform linux/amd64 -t davi1493/chat-service:latest -f Dockerfile-chat .
+docker push davi1493/chat-service:latest
+gcloud auth configure-docker
+docker tag davi1493/chat-service:latest gcr.io/unified-freedom-443118-s0/chat-service:latest
+docker push gcr.io/unified-freedom-443118-s0/chat-service:latest
+
+Building app-service:
+
+docker buildx build --platform linux/amd64 -t davi1493/app-service:latest -f Dockerfile-app .
+docker push davi1493/app-service:latest
+gcloud auth configure-docker
+docker tag davi1493/app-service:latest gcr.io/unified-freedom-443118-s0/app-service:latest
+docker push gcr.io/unified-freedom-443118-s0/app-service:latest
+
+Building email-consumer:
+
+docker buildx build --platform linux/amd64 -t davi1493/email-consumer:latest -f Dockerfile-email-worker .
+docker push davi1493/email-consumer:latest
+gcloud auth configure-docker
+docker tag davi1493/email-consumer:latest gcr.io/unified-freedom-443118-s0/email-consumer:latest
+docker push gcr.io/unified-freedom-443118-s0/email-consumer:latest
+
+Installing and running rabbitMQ:
+
+sudo apt-get update
+sudo apt-get upgrade -y
+sudo apt-get install -y erlang
+echo "deb https://dl.bintray.com/rabbitmq/debian testing main" | sudo tee /etc/apt/sources.list.d/rabbitmq.list
+wget -O- https://dl.bintray.com/rabbitmq/Keys/rabbitmq.asc | sudo apt-key add -
+sudo apt-get update
+sudo apt-get install -y rabbitmq-server
+sudo systemctl start rabbitmq-server
+sudo systemctl enable rabbitmq-server
+sudo rabbitmq-plugins enable rabbitmq_management
+
+# to allow firewall rules
+gcloud compute firewall-rules create allow-rabbitmq \
+  --allow tcp:5672,tcp:15672 \
+  --description "Allow RabbitMQ ports" 
+# add a new user as well
+  
+
+
+
+
+

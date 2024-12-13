@@ -8,14 +8,12 @@ const { v4: uuidv4 } = require("uuid");
 const SALT_ROUNDS = 10;
 const axios = require("axios");
 const friendRequestModel = require("../models/friendRequestModel");
-const firestore =require('../firestore');
-const amqp = require('amqplib');
-const GROUPS_COLLECTION = 'groups';
+const firestore = require("../firestore");
+const GROUPS_COLLECTION = "groups";
 const storage = new Storage({
   keyFilename: "./config/firebase-service-account.json", // Ensure this file exists in the config directory
 });
 const amqp = require("amqplib");
-
 
 // RabbitMQ Configuration
 let channel;
@@ -24,7 +22,7 @@ const queueName = "profilePictureQueue";
 // Initialize RabbitMQ Connection
 (async () => {
   try {
-    const connection = await amqp.connect("amqp://localhost:5672"); // Replace with your RabbitMQ URL
+    const connection = await amqp.connect(global.RABBIT_MQ); // Replace with your RabbitMQ URL
     channel = await connection.createChannel();
     await channel.assertQueue(queueName);
     console.log("RabbitMQ initialized, queue:", queueName);
@@ -46,14 +44,11 @@ const publishToRabbitMQ = async (message) => {
   }
 };
 
-// RabbitMQ URL
-const RABBITMQ_URL = 'amqp://localhost';
-
 // RabbitMQ Producer for Sign-Up Emails
 const sendSignUpEmail = async (emailData) => {
-  const connection = await amqp.connect(RABBITMQ_URL);
+  const connection = await amqp.connect(global.RABBIT_MQ);
   const channel = await connection.createChannel();
-  const queue = 'signup_emails';
+  const queue = "signup_emails";
 
   // Assert the queue exists
   await channel.assertQueue(queue, { durable: true });
@@ -61,7 +56,7 @@ const sendSignUpEmail = async (emailData) => {
   // Send email data to the queue
   channel.sendToQueue(queue, Buffer.from(JSON.stringify(emailData)));
 
-  console.log('Sign-up email message sent to queue:', emailData);
+  console.log("Sign-up email message sent to queue:", emailData);
 
   // Close the channel and connection
   setTimeout(() => {
@@ -87,9 +82,13 @@ exports.signUp = async (req, res) => {
 
   try {
     // Check for existing user
-    const existingUser = await clientModel.getClientByUsernameOrEmail(username, email);
+    const existingUser = await clientModel.getClientByUsernameOrEmail(
+      username,
+      email
+    );
     if (existingUser) {
-      const conflictField = existingUser.username === username ? 'username' : 'email';
+      const conflictField =
+        existingUser.username === username ? "username" : "email";
       return res.status(400).json({
         error: `User with this ${conflictField} already exists.`,
       });
@@ -129,7 +128,7 @@ exports.signUp = async (req, res) => {
     const emailData = {
       username,
       email,
-      subject: 'The Group Manager',
+      subject: "The Group Manager",
       body: `Hi ${username},\n\nYou have successfully created an account in Studious.\n\nThank you,\nStudious - Team`,
     };
     await sendSignUpEmail(emailData);
@@ -152,7 +151,6 @@ exports.signUp = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
 
 // Login Endpoint
 exports.logIn = async (req, res) => {
@@ -236,7 +234,8 @@ exports.sendFriendRequest = async (req, res) => {
     }
 
     // Check if a friend request already exists
-    const pendingRequests = await friendRequestModel.getPendingRequests(receiverId);
+    const pendingRequests =
+      await friendRequestModel.getPendingRequests(receiverId);
     const alreadyRequested = pendingRequests.some(
       (request) => request.senderId === senderId
     );
@@ -249,8 +248,8 @@ exports.sendFriendRequest = async (req, res) => {
 
     // Prepare friend request data
     const requestData = {
-      senderId: senderId.trim(),  // Ensure senderId is not undefined
-      receiverId: receiverId.trim(),  // Ensure receiverId is not undefined
+      senderId: senderId.trim(), // Ensure senderId is not undefined
+      receiverId: receiverId.trim(), // Ensure receiverId is not undefined
       createdAt: new Date().toISOString(),
     };
 
@@ -273,20 +272,25 @@ exports.acceptFriendRequest = async (req, res) => {
   const { requestId, clientId } = req.body; // Ensure clientId is passed along with requestId
 
   try {
-    const result = await friendRequestModel.acceptFriendRequest(requestId, clientId); // Pass clientId
+    const result = await friendRequestModel.acceptFriendRequest(
+      requestId,
+      clientId
+    ); // Pass clientId
     res.status(200).json({ message: result });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-
 // Reject a Friend Request
 exports.rejectFriendRequest = async (req, res) => {
   const { requestId, clientId } = req.body; // Ensure clientId is also passed
 
   try {
-    const result = await friendRequestModel.rejectFriendRequest(requestId, clientId); // Pass clientId
+    const result = await friendRequestModel.rejectFriendRequest(
+      requestId,
+      clientId
+    ); // Pass clientId
     res.status(200).json({ message: result });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -307,24 +311,30 @@ exports.createNewGroup = async (req, res) => {
   } = req.body;
 
   if (!clientId) {
-    return res.status(400).json({ error: 'Client ID is missing.' });
+    return res.status(400).json({ error: "Client ID is missing." });
   }
 
   try {
     const existingGroup = await groupModel.getGroupByName(groupName);
     if (existingGroup) {
-      return res.status(400).json({ error: 'Group with this name already exists.' });
+      return res
+        .status(400)
+        .json({ error: "Group with this name already exists." });
     }
 
     const userFriends = await clientModel.getFriendsList(clientId);
     if (!Array.isArray(userFriends)) {
-      return res.status(500).json({ error: 'Failed to retrieve friends list.' });
+      return res
+        .status(500)
+        .json({ error: "Failed to retrieve friends list." });
     }
 
-    const invalidFriends = friends.filter((friend) => !userFriends.includes(friend));
+    const invalidFriends = friends.filter(
+      (friend) => !userFriends.includes(friend)
+    );
     if (invalidFriends.length > 0) {
       return res.status(400).json({
-        error: `The following users are not your friends: ${invalidFriends.join(', ')}`,
+        error: `The following users are not your friends: ${invalidFriends.join(", ")}`,
       });
     }
 
@@ -342,7 +352,7 @@ exports.createNewGroup = async (req, res) => {
       memberCount: friends.length + 1,
     };
 
-    if (type.toLowerCase() === 'online') {
+    if (type.toLowerCase() === "online") {
       newGroup.zoomLink = `https://zoom.us/${uuidv4()}`;
     }
 
@@ -352,9 +362,9 @@ exports.createNewGroup = async (req, res) => {
     }
 
     // Publish to RabbitMQ
-    const connection = await amqp.connect('amqp://localhost');
+    const connection = await amqp.connect(global.RABBIT_MQ);
     const channel = await connection.createChannel();
-    const queue = 'group_emails';
+    const queue = "group_emails";
 
     await channel.assertQueue(queue, { durable: true });
 
@@ -371,19 +381,21 @@ exports.createNewGroup = async (req, res) => {
         zoomLink: newGroup.zoomLink || null,
       };
 
-      channel.sendToQueue(queue, Buffer.from(JSON.stringify(emailData)), { persistent: true });
+      channel.sendToQueue(queue, Buffer.from(JSON.stringify(emailData)), {
+        persistent: true,
+      });
     }
 
     await channel.close();
     await connection.close();
 
     res.status(201).json({
-      message: 'Group created successfully',
+      message: "Group created successfully",
       groupId,
-      status: 'success',
+      status: "success",
     });
   } catch (err) {
-    console.error('Error creating group:', err.message);
+    console.error("Error creating group:", err.message);
     res.status(500).json({ error: err.message });
   }
 };
@@ -394,16 +406,17 @@ exports.getGroupDetails = async (req, res) => {
   try {
     const groupDetails = await groupModel.getGroupById(groupId);
     if (!groupDetails) {
-      return res.status(404).json({ error: 'Group not found.' });
+      return res.status(404).json({ error: "Group not found." });
     }
     res.status(201).json({
       groupDetails,
-      status: 'success',
+      status: "success",
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
 // Join group ku search bar endpoint
 exports.getGroups = async (req, res) => {
   const { searchTerm, filters } = req.body;
@@ -411,39 +424,39 @@ exports.getGroups = async (req, res) => {
   try {
     let query = firestore.collection(GROUPS_COLLECTION);
 
-    if (searchTerm && searchTerm.trim() !== '') {
-      query = query.where('groupName', '==', searchTerm);
+    if (searchTerm && searchTerm.trim() !== "") {
+      query = query.where("groupName", "==", searchTerm);
     }
 
     if (filters && Object.keys(filters).length > 0) {
       const { meetingType, time, location, subject, title } = filters;
 
       if (meetingType) {
-        query = query.where('type', '==', meetingType);
+        query = query.where("type", "==", meetingType);
       }
       if (time) {
-        query = query.where('time', '==', time);
+        query = query.where("time", "==", time);
       }
       if (location) {
-        query = query.where('locationLowercase', '==', location.toLowerCase());
+        query = query.where("locationLowercase", "==", location.toLowerCase());
       }
       if (subject) {
-        query = query.where('subjectLowercase', '==', subject.toLowerCase());
+        query = query.where("subjectLowercase", "==", subject.toLowerCase());
       }
       if (title) {
-        query = query.where('groupName', '==', title);
+        query = query.where("groupName", "==", title);
       }
     }
 
     const snapshot = await query.get();
     if (snapshot.empty) {
-      return res.status(404).json({ message: 'No groups found.' });
+      return res.status(404).json({ message: "No groups found." });
     }
 
     const groupDetails = snapshot.docs.map((doc) => doc.data());
     res.status(200).json({
       groupDetails,
-      status: 'success',
+      status: "success",
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -461,41 +474,51 @@ exports.getAllGroups = async (req, res) => {
       status: "success",
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+    res.status(500).json({ error: err.message });
+  }
 };
 
 // searchFrends function in "create a group"
-exports.searchFriends = async (req, res) => { 
+exports.searchFriends = async (req, res) => {
   const { clientId, searchQuery } = req.body;
 
   // Validate input
-  if (!clientId || typeof clientId !== 'string' || !clientId.trim()) {
-    return res.status(400).json({ error: 'Client ID is missing or invalid.' });
+  if (!clientId || typeof clientId !== "string" || !clientId.trim()) {
+    return res.status(400).json({ error: "Client ID is missing or invalid." });
   }
 
-  if (!searchQuery || typeof searchQuery !== 'string' || !searchQuery.trim()) {
-    return res.status(400).json({ error: 'Search query is missing or invalid.' });
+  if (!searchQuery || typeof searchQuery !== "string" || !searchQuery.trim()) {
+    return res
+      .status(400)
+      .json({ error: "Search query is missing or invalid." });
   }
 
   try {
     // Fetch the user's friends list
     const userFriends = await clientModel.getFriendsList(clientId);
     if (!Array.isArray(userFriends) || userFriends.length === 0) {
-      return res.status(404).json({ error: 'No friends found for the given client.' });
+      return res
+        .status(404)
+        .json({ error: "No friends found for the given client." });
     }
 
     // Find the user by username (searchQuery)
     const matchedUser = await clientModel.getClientByUsername(searchQuery);
     if (!matchedUser) {
-      return res.status(404).json({ error: `No user found with username matching "${searchQuery}".` });
+      return res.status(404).json({
+        error: `No user found with username matching "${searchQuery}".`,
+      });
     }
 
     // Check if the matched user is in the friend list
-    const isFriend = userFriends.some(friend => friend.clientId === matchedUser.id);
+    const isFriend = userFriends.some(
+      (friend) => friend.clientId === matchedUser.id
+    );
 
     if (!isFriend) {
-      return res.status(404).json({ error: `The user "${searchQuery}" is not in the friend list of the client.` });
+      return res.status(404).json({
+        error: `The user "${searchQuery}" is not in the friend list of the client.`,
+      });
     }
 
     // Return the matched user's details
@@ -506,7 +529,7 @@ exports.searchFriends = async (req, res) => {
         email: matchedUser.email,
         profilePicture: matchedUser.profilePicture || null,
       },
-      status: 'success',
+      status: "success",
     });
   } catch (err) {
     console.error(`Error while searching friends: ${err.message}`);
@@ -522,9 +545,9 @@ exports.addMemberToGroup = async (req, res) => {
     await groupModel.addMembersToGroup(groupId, newMembers);
 
     // Publish to RabbitMQ
-    const connection = await amqp.connect('amqp://localhost');
+    const connection = await amqp.connect(global.RABBIT_MQ);
     const channel = await connection.createChannel();
-    const queue = 'group_emails';
+    const queue = "group_emails";
 
     await channel.assertQueue(queue, { durable: true });
 
@@ -542,13 +565,17 @@ exports.addMemberToGroup = async (req, res) => {
         zoomLink: group.zoomLink || null,
       };
 
-      channel.sendToQueue(queue, Buffer.from(JSON.stringify(emailData)), { persistent: true });
+      channel.sendToQueue(queue, Buffer.from(JSON.stringify(emailData)), {
+        persistent: true,
+      });
     }
 
     await channel.close();
     await connection.close();
 
-    res.status(200).json({ message: 'Members added successfully', status: 'success' });
+    res
+      .status(200)
+      .json({ message: "Members added successfully", status: "success" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -624,7 +651,6 @@ exports.addMemberToGroup = async (req, res) => {
 //     res.status(500).json({ error: error.message });
 //   }
 // };
-
 
 // Login Endpoint
 exports.logIn = async (req, res) => {
@@ -732,4 +758,73 @@ exports.addFriend = async (req, res) => {
   }
 };
 
+//get groups for a client used to show upcoming events
+exports.getGroupsForClient = async (req, res) => {
+  const { clientId } = req.body;
 
+  if (!clientId) {
+    return res.status(400).json({ error: "Client ID is missing." });
+  }
+
+  try {
+    // Fetch client details
+    const clientDetails = await clientModel.getClientById(clientId);
+
+    // Resolve all group details in parallel using Promise.all
+    const groupDetails = await Promise.all(
+      clientDetails.groups.map(async (groupId) => {
+        const groupDetail = await groupModel.getGroupById(groupId);
+        return groupDetail;
+      })
+    );
+
+    // Send the response
+    res.status(201).json({
+      groupDetails: groupDetails,
+      status: "success",
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.joinGroup = async (req, res) => {
+  const { clientId, groupId } = req.body;
+
+  if (!groupId || !clientId) {
+    return res.status(400).json({
+      error: "Invalid request. Provide a valid groupId or clientId",
+    });
+  }
+
+  try {
+    // Get group details
+    const group = await groupModel.getGroupById(groupId);
+    if (!group) {
+      return res.status(404).json({ error: "Group not found." });
+    }
+
+    // Check if user is already a member
+    const isAlreadyMember = group.members.includes(clientId);
+    if (isAlreadyMember) {
+      return res
+        .status(400)
+        .json({ error: "User is already a member of the group." });
+    }
+
+    // Update group and client
+    await groupModel.addMembersToGroup(groupId, [clientId]);
+    await clientModel.addGroupToClient(clientId, groupId);
+
+    res.status(200).json({
+      message: "User added to group successfully.",
+      groupId,
+      clientId: clientId,
+    });
+  } catch (error) {
+    console.error("Error adding member to group:", error);
+    res.status(500).json({
+      error: `Failed to add member to the group: ${error.message}`,
+    });
+  }
+};
