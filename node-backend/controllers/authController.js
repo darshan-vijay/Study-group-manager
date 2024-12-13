@@ -8,7 +8,6 @@ const friendRequestModel = require("../models/friendRequestModel");
 const { v4: uuidv4 } = require("uuid");
 const SALT_ROUNDS = 10;
 const axios = require("axios");
-const friendRequestModel = require("../models/friendRequestModel");
 const firestore = require("../firestore");
 const GROUPS_COLLECTION = "groups";
 const storage = new Storage({
@@ -16,33 +15,23 @@ const storage = new Storage({
 });
 const amqp = require("amqplib");
 
-// RabbitMQ Configuration
-let channel;
-const queueName = "profilePictureQueue";
-
-// Initialize RabbitMQ Connection
-(async () => {
-  try {
-    const connection = await amqp.connect(global.RABBIT_MQ); // Replace with your RabbitMQ URL
-    channel = await connection.createChannel();
-    await channel.assertQueue(queueName);
-    console.log("RabbitMQ initialized, queue:", queueName);
-  } catch (error) {
-    console.error("RabbitMQ connection error:", error.message);
-  }
-})();
-
 // Publish a Task to RabbitMQ
 const publishToRabbitMQ = async (message) => {
-  try {
-    if (!channel) {
-      throw new Error("RabbitMQ channel is not initialized.");
-    }
-    channel.sendToQueue(queueName, Buffer.from(JSON.stringify(message)));
-    console.log("Message published to RabbitMQ:", message);
-  } catch (error) {
-    console.error("Error publishing to RabbitMQ:", error.message);
-  }
+  const queue = "profilePictureQueue";
+  const connection = await amqp.connect(global.RABBIT_MQ);
+  const channel = await connection.createChannel();
+  await channel.assertQueue(queue, { durable: true });
+
+  // Send email data to the queue
+  channel.sendToQueue(queue, Buffer.from(JSON.stringify(message)));
+
+  console.log("Profile fix sent to Queue");
+
+  // Close the channel and connection
+  setTimeout(() => {
+    channel.close();
+    connection.close();
+  }, 500);
 };
 
 // RabbitMQ Producer for Sign-Up Emails
