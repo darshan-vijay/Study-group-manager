@@ -16,6 +16,10 @@ The **Study Group Manager** application facilitates students in forming study gr
 
 ---
 
+## Youtube Overview
+
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/hWxHUJqYAns/0.jpg)](https://www.youtube.com/watch?v=hWxHUJqYAns)
+
 ## Prerequisites
 
 Before you begin, ensure you have the following:
