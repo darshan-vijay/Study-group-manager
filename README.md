@@ -4,8 +4,8 @@
 
 **Members:**
 
-- Ruban Chakaravarthi
 - Darshan Vijayaraghavan
+- Ruban Chakaravarthi
 - Vignesh Kumar Karthikeyan
 
 ---
