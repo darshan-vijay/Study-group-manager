@@ -32,8 +32,6 @@ Studious is a cloud-native web application that helps students form and manage s
 
 ![Architecture Diagram](./Architecture-diagram.jpg)
 
-> _Replace the image path above with your actual image file location._
-
 ### Key Technologies
 
 | Component      | Technology               | Description                                |
