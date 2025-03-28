@@ -1,7 +1,5 @@
 # Study Group Manager - Studious
 
-## Team 28
-
 **Members:**
 
 - Darshan Vijayaraghavan
