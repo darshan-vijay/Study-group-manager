@@ -1,221 +1,193 @@
-# Study Group Manager - Studious
+# 📚 Study Group Manager – Studious
 
-**Members:**
-
-- Darshan Vijayaraghavan
-- Ruban Chakaravarthi
-- Vignesh Kumar Karthikeyan
+> **Team Members:**  
+> Darshan Vijayaraghavan, Ruban Chakaravarthi, Vignesh Kumar Karthikeyan
 
 ---
 
-## Project Overview
+## 🎬 Demo Video
 
-The **Study Group Manager** application facilitates students in forming study groups based on their preferences, schedules, and courses. It leverages Google Cloud Platform (GCP) for infrastructure, Kubernetes for orchestration, Terraform for infrastructure automation, and RabbitMQ for service decoupling. This document provides step-by-step instructions to set up and deploy the project.
-
----
-
-## Youtube Overview
-
-[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/hWxHUJqYAns/0.jpg)](https://www.youtube.com/watch?v=hWxHUJqYAns)
-
-## Prerequisites
-
-Before you begin, ensure you have the following:
-
-- A Google Cloud Platform account.
-- Terraform Cloud account.
-- Google Cloud SDK (`gcloud` CLI).
-- Kubernetes CLI (`kubectl`).
-- Docker installed on your local system.
+[![Studious Demo](https://img.youtube.com/vi/hWxHUJqYAns/0.jpg)](https://www.youtube.com/watch?v=hWxHUJqYAns)  
+🔗 [Watch Full Demo](https://www.youtube.com/watch?v=hWxHUJqYAns)
 
 ---
 
-## Setup Instructions
+## 🎯 Project Goals
 
-### 1. Create a Service Account
+Studious is a cloud-native web application that helps students form and manage study groups easily and efficiently. It supports:
 
-1. **Create a Service Account**:
-
-   - Go to the [Google Cloud Console](https://console.cloud.google.com/).
-   - Navigate to **IAM & Admin** > **Service Accounts**.
-   - Click **Create Service Account** and fill in the required details.
-
-2. **Assign Roles**:
-
-   - Assign the `Editor` role to the service account for simplicity, or assign specific roles such as:
-     - Compute Admin
-     - Kubernetes Engine Admin
-     - Firestore Admin
-     - Storage Admin
-
-3. **Download the Service Account Key**:
-   - Once the service account is created, generate a key in JSON format and download it to your local machine.
-
-### 2. Set Up Terraform Cloud
-
-1. **Create an Account**:
-
-   - Sign up for a free account on [Terraform Cloud](https://app.terraform.io/).
-
-2. **Create a Workspace**:
-
-   - Create a project and a workspace in Terraform Cloud.
-
-3. **Store Service Account Key**:
-   - Log in to Terraform Cloud.
-   - Navigate to **Workspace Settings** > **Variables**.
-   - Add a variable named `GOOGLE_CREDENTIALS` and upload the service account JSON key.
-
-### 3. Configure Terraform
-
-1. **Navigate to Terraform Directory**:
-
-   - Open a terminal and navigate to the directory containing the `main.tf` file.
-
-2. **Initialize Terraform**:
-
-   ```bash
-   terraform init
-   ```
-
-3. **Preview Infrastructure Changes**:
-
-   ```bash
-   terraform plan
-   ```
-
-   This command shows the resources that Terraform will create.
-
-4. **Apply Terraform Configuration**:
-   ```bash
-   terraform apply
-   ```
-   Confirm the changes when prompted. Terraform will create the necessary GCP resources.
+- Student matching based on academic interests and availability
+- Creation of online (Zoom) or offline study groups
+- Real-time chat and private messaging
+- Group event management and reminders
+- Email notifications and friend management
 
 ---
 
-### 4. Authenticate with Google Cloud CLI
+## 🧱 Architecture Overview
 
-1. **Install Google Cloud SDK**:
+> **Microservice-based architecture deployed on Google Cloud using Kubernetes**
 
-   - Follow the installation guide [here](https://cloud.google.com/sdk/docs/install).
+### 📷 Architecture Diagram
 
-2. **Authenticate with GCP**:
+![Architecture Diagram](./Architecture-diagram.jpg)
 
-   ```bash
-   gcloud auth login
-   ```
+> _Replace the image path above with your actual image file location._
 
-3. **Set Active Project**:
+### Key Technologies
 
-   ```bash
-   gcloud config set project [PROJECT_ID]
-   ```
-
-4. **Connect to Kubernetes Cluster**:
-   ```bash
-   gcloud container clusters get-credentials [CLUSTER_NAME] --zone [ZONE_NAME]
-   ```
-
----
-
-### 5. Deploy Kubernetes Services
-
-1. Ensure the Terraform infrastructure is deployed and the Kubernetes cluster is running.
-2. Deploy all Kubernetes services using the provided script:
-
-   ```bash
-   ./deploy-services.sh
-   ```
-
-3. Verify the services are running:
-   ```bash
-   kubectl get services
-   ```
+| Component      | Technology               | Description                                |
+| -------------- | ------------------------ | ------------------------------------------ |
+| Frontend       | React.js (GKE)           | Dynamic and responsive user interface      |
+| Backend        | Node.js + REST API (GKE) | Handles authentication, groups, scheduling |
+| Real-time Chat | Socket.IO + Redis (GKE)  | Enables real-time messaging                |
+| Async Tasks    | RabbitMQ (GCP VM)        | Background jobs like emails/uploads        |
+| Database       | Firestore                | Stores user data, groups, chat logs        |
+| Media Storage  | Google Cloud Storage     | Stores profile pictures, documents         |
+| Infrastructure | Terraform                | Automates infrastructure provisioning      |
+| Orchestration  | Kubernetes (GKE)         | Manages and scales all services            |
 
 ---
 
-### 6. Configure Backend and Frontend Deployments
+## 🔁 System Workflow
 
-1. **Retrieve External Endpoints**:
-
-   - Run the following command to fetch external service endpoints:
-     ```bash
-     kubectl get services
-     ```
-
-2. **Update Configurations**:
-   - Navigate to the `backend` and `frontend` directories.
-   - Update the configuration files with the service endpoints obtained in the previous step.
+1. **User Registration & Authentication** – Signup with email verification, login to dashboard
+2. **Study Group Creation** – Online/offline group creation with Zoom links for online
+3. **Group Management** – Join, leave, view upcoming events
+4. **Chat & Messaging** – Real-time private/group chat via WebSockets + Redis
+5. **Email Notifications** – Sent via RabbitMQ workers
+6. **Media Uploads** – Profile picture compression and upload to Cloud Storage
 
 ---
 
-### 7. Deploy Kubernetes Deployments
+## ⚙️ Setup Instructions
 
-1. Deploy all required Kubernetes deployments using the provided script:
+### ✅ Prerequisites
 
-   ```bash
-   ./deploy-deployments.sh
-   ```
-
-2. Verify the deployments are running:
-   ```bash
-   kubectl get deployments
-   ```
+- Google Cloud account
+- Terraform Cloud account
+- Docker
+- Google Cloud SDK (gcloud)
+- Kubernetes CLI (kubectl)
 
 ---
 
-### 8. Push Docker Images (Optional)
+### 🔐 1. Create Service Account in GCP
 
-If you want to push Docker images to **Google Kubernetes Registry (GKR)** before deploying, use the commands in the `commands-for-running-cluster` file.
-
-Example:
-
-```bash
-docker build -t gcr.io/[PROJECT_ID]/[IMAGE_NAME]:[TAG] .
-docker push gcr.io/[PROJECT_ID]/[IMAGE_NAME]:[TAG]
-```
-
----
-
-### 9. Install RabbitMQ
-
-1. Use the `commands-for-running-cluster` file to install RabbitMQ on the VM instance.
-   Example:
-
-   ```bash
-   sudo apt-get update
-   sudo apt-get install rabbitmq-server -y
-   sudo systemctl start rabbitmq-server
-   sudo systemctl enable rabbitmq-server
-   ```
-
-2. Verify RabbitMQ installation:
-   ```bash
-   sudo rabbitmqctl status
-   ```
+- IAM & Admin > Service Accounts → Create new
+- Assign roles:
+  - Compute Admin
+  - Kubernetes Engine Admin
+  - Firestore Admin
+  - Storage Admin
+- Download the JSON key
 
 ---
 
-### 10. Access the Application
+### ☁️ 2. Configure Terraform Cloud
 
-1. Use the service endpoint of the `frontend-service` to access the application.
-2. Retrieve the endpoint:
-   ```bash
-   kubectl get services | grep frontend-service
-   ```
-3. Open the retrieved endpoint in your web browser to use the application.
+- Go to Terraform Cloud
+- Create a workspace
+- Upload service account JSON as variable GOOGLE_CREDENTIALS
 
 ---
 
-## Additional Notes
+### 📁 3. Deploy Infrastructure with Terraform
 
-- Ensure all required environment variables are set before running the scripts.
-- Regularly monitor the Kubernetes cluster for any issues using:
-  ```bash
-  kubectl get pods
-  ```
-- Logs can be viewed using:
-  ```bash
+Run the following commands:
+
+    cd terraform/
+    terraform init
+    terraform plan
+    terraform apply
+
+---
+
+### 🔐 4. Authenticate with Google Cloud CLI
+
+    gcloud auth login
+    gcloud config set project [PROJECT_ID]
+    gcloud container clusters get-credentials [CLUSTER_NAME] --zone [ZONE]
+
+---
+
+### 🧵 5. Deploy Kubernetes Services
+
+    ./deploy-services.sh
+    kubectl get services
+
+---
+
+### ⚙️ 6. Configure & Deploy Kubernetes Deployments
+
+    kubectl get services
+    # Update .env files with new endpoints
+
+    ./deploy-deployments.sh
+    kubectl get deployments
+
+---
+
+### 🐳 7. (Optional) Push Docker Images
+
+    docker build -t gcr.io/[PROJECT_ID]/[IMAGE_NAME]:[TAG] .
+    docker push gcr.io/[PROJECT_ID]/[IMAGE_NAME]:[TAG]
+
+---
+
+### 📬 8. Install RabbitMQ on VM
+
+    sudo apt-get update
+    sudo apt-get install rabbitmq-server -y
+    sudo systemctl start rabbitmq-server
+    sudo systemctl enable rabbitmq-server
+    sudo rabbitmqctl status
+
+---
+
+## 🌐 Access the Application
+
+    kubectl get services | grep frontend-service
+
+Visit the external IP in your browser to access the Studious platform.
+
+---
+
+## 🧪 Testing & Debugging
+
+- Integration + regression tests
+- Local testing with Minikube
+- Logging in backend + workers
+
   kubectl logs [POD_NAME]
-  ```
+
+Google Cloud Monitoring used for runtime errors and performance.
+
+---
+
+## 📊 Performance & Monitoring
+
+- WebSocket + Redis pub/sub for real-time chat
+- RabbitMQ for async job handling
+- Kubernetes handles:
+  - Auto-scaling
+  - Self-healing
+  - Rolling updates
+
+---
+
+## ⚠️ Known Limitations
+
+- Steep learning curve for Kubernetes/Terraform
+- No CI/CD pipeline (yet)
+- Redis + WebSocket scaling needs tuning
+- Cost management on cloud services
+
+---
+
+## 💡 Future Enhancements
+
+- CI/CD using GitHub Actions or Jenkins
+- AI-based group suggestions
+- Admin analytics dashboard
+- Multilingual and accessibility support
