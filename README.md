@@ -1,18 +1,18 @@
-# 📚 Study Group Manager – Studious
+# Study Group Manager – Studious
 
 > **Team Members:**  
 > Darshan Vijayaraghavan, Ruban Chakaravarthi, Vignesh Kumar Karthikeyan
 
 ---
 
-## 🎬 Demo Video
+## Demo Video
 
 [![Studious Demo](https://img.youtube.com/vi/hWxHUJqYAns/0.jpg)](https://www.youtube.com/watch?v=hWxHUJqYAns)  
 🔗 [Watch Full Demo](https://www.youtube.com/watch?v=hWxHUJqYAns)
 
 ---
 
-## 🎯 Project Goals
+## Project Goals
 
 Studious is a cloud-native web application that helps students form and manage study groups easily and efficiently. It supports:
 
@@ -24,11 +24,11 @@ Studious is a cloud-native web application that helps students form and manage s
 
 ---
 
-## 🧱 Architecture Overview
+## Architecture Overview
 
 > **Microservice-based architecture deployed on Google Cloud using Kubernetes**
 
-### 📷 Architecture Diagram
+### Architecture Diagram
 
 ![Architecture Diagram](./Architecture-diagram.jpg)
 
@@ -47,7 +47,7 @@ Studious is a cloud-native web application that helps students form and manage s
 
 ---
 
-## 🔁 System Workflow
+## System Workflow
 
 1. **User Registration & Authentication** – Signup with email verification, login to dashboard
 2. **Study Group Creation** – Online/offline group creation with Zoom links for online
@@ -58,9 +58,9 @@ Studious is a cloud-native web application that helps students form and manage s
 
 ---
 
-## ⚙️ Setup Instructions
+## Setup Instructions
 
-### ✅ Prerequisites
+### Prerequisites
 
 - Google Cloud account
 - Terraform Cloud account
@@ -70,7 +70,7 @@ Studious is a cloud-native web application that helps students form and manage s
 
 ---
 
-### 🔐 1. Create Service Account in GCP
+### 1. Create Service Account in GCP
 
 - IAM & Admin > Service Accounts → Create new
 - Assign roles:
@@ -82,7 +82,7 @@ Studious is a cloud-native web application that helps students form and manage s
 
 ---
 
-### ☁️ 2. Configure Terraform Cloud
+### 2. Configure Terraform Cloud
 
 - Go to Terraform Cloud
 - Create a workspace
@@ -90,7 +90,7 @@ Studious is a cloud-native web application that helps students form and manage s
 
 ---
 
-### 📁 3. Deploy Infrastructure with Terraform
+### 3. Deploy Infrastructure with Terraform
 
 Run the following commands:
 
@@ -101,7 +101,7 @@ Run the following commands:
 
 ---
 
-### 🔐 4. Authenticate with Google Cloud CLI
+### 4. Authenticate with Google Cloud CLI
 
     gcloud auth login
     gcloud config set project [PROJECT_ID]
@@ -109,14 +109,14 @@ Run the following commands:
 
 ---
 
-### 🧵 5. Deploy Kubernetes Services
+### 5. Deploy Kubernetes Services
 
     ./deploy-services.sh
     kubectl get services
 
 ---
 
-### ⚙️ 6. Configure & Deploy Kubernetes Deployments
+### 6. Configure & Deploy Kubernetes Deployments
 
     kubectl get services
     # Update .env files with new endpoints
@@ -126,14 +126,14 @@ Run the following commands:
 
 ---
 
-### 🐳 7. (Optional) Push Docker Images
+### 7. (Optional) Push Docker Images
 
     docker build -t gcr.io/[PROJECT_ID]/[IMAGE_NAME]:[TAG] .
     docker push gcr.io/[PROJECT_ID]/[IMAGE_NAME]:[TAG]
 
 ---
 
-### 📬 8. Install RabbitMQ on VM
+### 8. Install RabbitMQ on VM
 
     sudo apt-get update
     sudo apt-get install rabbitmq-server -y
@@ -143,7 +143,7 @@ Run the following commands:
 
 ---
 
-## 🌐 Access the Application
+## Access the Application
 
     kubectl get services | grep frontend-service
 
@@ -151,7 +151,7 @@ Visit the external IP in your browser to access the Studious platform.
 
 ---
 
-## 🧪 Testing & Debugging
+## Testing & Debugging
 
 - Integration + regression tests
 - Local testing with Minikube
@@ -163,7 +163,7 @@ Google Cloud Monitoring used for runtime errors and performance.
 
 ---
 
-## 📊 Performance & Monitoring
+## Performance & Monitoring
 
 - WebSocket + Redis pub/sub for real-time chat
 - RabbitMQ for async job handling
@@ -174,7 +174,7 @@ Google Cloud Monitoring used for runtime errors and performance.
 
 ---
 
-## ⚠️ Known Limitations
+## Known Limitations
 
 - Steep learning curve for Kubernetes/Terraform
 - No CI/CD pipeline (yet)
@@ -183,7 +183,7 @@ Google Cloud Monitoring used for runtime errors and performance.
 
 ---
 
-## 💡 Future Enhancements
+## Future Enhancements
 
 - CI/CD using GitHub Actions or Jenkins
 - AI-based group suggestions
